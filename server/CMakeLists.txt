@@ -1,13 +1,13 @@
 add_executable(server
-    src/main.cpp
+    src/Main.cpp
 )
 
 target_link_libraries(server
     PRIVATE
-        remote
+        shared
 )
 
 target_include_directories(server PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_SOURCE_DIR}/remote/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/shared/include
 )
