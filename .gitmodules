@@ -12,5 +12,6 @@
 	branch = v1.13.0
 [submodule "external/imgui"]
 	path = external/imgui
-	url = https://github.com/ocornut/imgui.git
-	branch = v1.90.4
+	url = https://github.com/TheCherno/imgui.git
+	branch = 3cf61f67de73153e29e0c26f23d80edbaf120a3d
+	
