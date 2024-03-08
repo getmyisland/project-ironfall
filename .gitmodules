@@ -10,4 +10,6 @@
 	path = external/spdlog
 	url = https://github.com/gabime/spdlog.git
 	branch = v1.13.0
-	
+[submodule "external/freetype"]
+	path = external/freetype
+	url = https://github.com/freetype/freetype
