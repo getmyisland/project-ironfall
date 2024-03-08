@@ -10,8 +10,4 @@
 	path = external/spdlog
 	url = https://github.com/gabime/spdlog.git
 	branch = v1.13.0
-[submodule "external/imgui"]
-	path = external/imgui
-	url = https://github.com/ocornut/imgui.git
-	branch = v1.90.4-docking
 	
