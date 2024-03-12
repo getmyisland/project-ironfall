@@ -11,8 +11,6 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
-#include <fstream>
-
 namespace dyxide
 {
 	std::unordered_map<std::string, Ref<Shader>> Shader::s_Cache;
@@ -27,41 +25,6 @@ namespace dyxide
 		glDeleteProgram(m_RendererID);
 	}
 
-	Ref<Shader> Shader::LoadFromFile(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath)
-	{
-		DYXIDE_ASSERT(!Exists(name), "Shader with name already exists!");
-
-		std::string vertexCode;
-		std::string fragmentCode;
-		std::ifstream vShaderFile;
-		std::ifstream fShaderFile;
-
-		vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-		fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-
-		try
-		{
-			vShaderFile.open(vertexPath);
-			fShaderFile.open(fragmentPath);
-			std::stringstream vShaderStream, fShaderStream;
-
-			vShaderStream << vShaderFile.rdbuf();
-			fShaderStream << fShaderFile.rdbuf();
-
-			vShaderFile.close();
-			fShaderFile.close();
-
-			vertexCode = vShaderStream.str();
-			fragmentCode = fShaderStream.str();
-		}
-		catch (std::ifstream::failure& e)
-		{
-			DYXIDE_ERROR("Shader file not successfully read:\n{0}", e.what());
-		}
-
-		return Compile(name, vertexCode.c_str(), fragmentCode.c_str());
-	}
-
 	static void CheckCompileErrors(unsigned int shader, uint32_t type)
 	{
 		int success;
@@ -72,7 +35,7 @@ namespace dyxide
 			if (!success)
 			{
 				glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-				DYXIDE_ERROR("Shader linking failed:\n{0}", infoLog);
+				DYXIDE_ERROR((type == GL_VERTEX_SHADER ? "Vertex" : "Fragment") << " shader linking failed:\n" << infoLog);
 			}
 		}
 		else
@@ -81,7 +44,7 @@ namespace dyxide
 			if (!success)
 			{
 				glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-				DYXIDE_ERROR("Program Linking failed.\n" + std::string(infoLog));
+				DYXIDE_ERROR("Program Linking failed.\n" << infoLog);
 			}
 		}
 	}

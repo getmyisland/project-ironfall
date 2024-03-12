@@ -1,7 +1,7 @@
 #include <dxpch.h>
 #include <Engine/Core/SceneCamera.h>
 
-#include <Engine/Core/Common.h>
+#include <Engine/Core/Assert.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -53,7 +53,5 @@ namespace dyxide
 			m_Projection = glm::ortho(orthoLeft, orthoRight,
 				orthoBottom, orthoTop, m_OrthographicNear, m_OrthographicFar);
 		}
-
 	}
-
 }

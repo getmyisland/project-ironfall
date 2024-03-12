@@ -1,6 +1,7 @@
 #include <dxpch.h>
 #include <Engine/Core/Window.h>
 
+#include <Engine/Core/Assert.h>
 #include <Engine/Events/ApplicationEvent.h>
 #include <Engine/Events/MouseEvent.h>
 #include <Engine/Events/KeyEvent.h>

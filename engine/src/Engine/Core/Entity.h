@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Engine/Core/Assert.h>
 #include <Engine/Core/UUID.h>
 #include <Engine/Core/Scene.h>
 #include <Engine/Core/Components.h>

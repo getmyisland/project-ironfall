@@ -37,8 +37,6 @@ namespace dyxide
 		virtual uint32_t GetHeight() const = 0;
 		virtual uint32_t GetRendererID() const = 0;
 
-		virtual const std::string& GetPath() const = 0;
-
 		virtual void SetData(void* data, uint32_t size) = 0;
 
 		virtual void Bind(uint32_t slot = 0) const = 0;
@@ -59,8 +57,6 @@ namespace dyxide
 		virtual uint32_t GetHeight() const override { return m_Height; }
 		virtual uint32_t GetRendererID() const override { return m_RendererID; }
 
-		virtual const std::string& GetPath() const override { return m_Path; }
-
 		virtual void SetData(void* data, uint32_t size) override;
 
 		virtual void Bind(uint32_t slot = 0) const override;
@@ -78,7 +74,6 @@ namespace dyxide
 	private:
 		TextureSpecification m_Specification;
 
-		std::string m_Path;
 		bool m_IsLoaded = false;
 		uint32_t m_Width, m_Height;
 		uint32_t m_RendererID;

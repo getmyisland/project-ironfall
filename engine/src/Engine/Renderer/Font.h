@@ -24,12 +24,13 @@ namespace dyxide
 	class Font
 	{
 	public:
-		Font(const std::string& filepath);
+		Font(const std::string& path);
 		~Font() = default;
 
 		std::map<char, Character> GetCharacters() const { return m_Characters; }
 		FT_Face GetFace() const { return m_Face; }
 
+		static Ref<Font> Create(const std::string& path);
 		static Ref<Font> GetDefault();
 
 	private:

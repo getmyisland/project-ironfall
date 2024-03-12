@@ -3,6 +3,7 @@
 
 #include <Engine/Core/Assert.h>
 #include <Engine/Core/Log.h>
+#include <Engine/Core/ResourceLoader.h>
 #include <Engine/Renderer/Font.h>
 
 #include <filesystem>
@@ -10,13 +11,13 @@
 
 namespace dyxide
 {
-	Font::Font(const std::string& filepath)
+	Font::Font(const std::string& path)
 	{
 		FT_Library ft;
 		DYXIDE_ASSERT(FT_Init_FreeType(&ft), "Could not init FreeType Library");
 
 		FT_Face face;
-		DYXIDE_ASSERT(FT_New_Face(ft, (GetResourceDir() + filepath).c_str(), 0, &face), "Failed to load font");
+		DYXIDE_ASSERT(FT_New_Face(ft, path.c_str(), 0, &face), "Failed to load font");
 
 		FT_Set_Pixel_Sizes(face, 0, 48);
 
@@ -50,8 +51,13 @@ namespace dyxide
 		}
 	}
 
+	Ref<Font> Font::Create(const std::string& path)
+	{
+		return CreateRef<Font>(path);
+	}
+
 	Ref<Font> Font::GetDefault()
 	{
-		return CreateRef<Font>("fonts/opensans/OpenSans-Regular.ttf");
+		return ResourceLoader::LoadFont("/fonts/opensans/OpenSans-Regular.ttf");
 	}
 }

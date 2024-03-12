@@ -1,6 +1,7 @@
 #include <dxpch.h>
 #include <Engine/Renderer/Renderer2D.h>
 
+#include <Engine/Core/ResourceLoader.h>
 #include <Engine/Renderer/VertexArray.h>
 #include <Engine/Renderer/Shader.h>
 #include <Engine/Renderer/UniformBuffer.h>
@@ -19,7 +20,6 @@ namespace dyxide {
 		glm::vec4 Color;
 		glm::vec2 TexCoord;
 		float TexIndex;
-		float TilingFactor;
 	};
 
 	struct TextVertex
@@ -55,9 +55,6 @@ namespace dyxide {
 
 		std::array<Ref<Texture2D>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1; // 0 = white texture
-		
-		Ref<Texture2D> FontAtlasTexture;
-
 		glm::vec4 QuadVertexPositions[4];
 
 		Renderer2D::Statistics Stats;
@@ -81,8 +78,7 @@ namespace dyxide {
 			{ ShaderDataType::Float3, "a_Position"     },
 			{ ShaderDataType::Float4, "a_Color"        },
 			{ ShaderDataType::Float2, "a_TexCoord"     },
-			{ ShaderDataType::Float,  "a_TexIndex"     },
-			{ ShaderDataType::Float,  "a_TilingFactor" }
+			{ ShaderDataType::Float,  "a_TexIndex"     }
 		});
 		s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
 
@@ -125,19 +121,19 @@ namespace dyxide {
 		uint32_t whiteTextureData = 0xffffffff;
 		s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
-		int32_t samplers[s_Data.MaxTextureSlots];
+		int32_t samplers[s_Data.MaxTextureSlots]{};
 		for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
 			samplers[i] = i;
 
-		s_Data.QuadShader = Shader::LoadFromFile("Renderer2D_Quad", "shaders/Renderer2D_Quad.vertex", "shaders/Renderer2D_Quad.fragment");
-		s_Data.TextShader = Shader::LoadFromFile("Renderer2D_Text", "shaders/Renderer2D_Text.vertex", "shaders/Renderer2D_Text.fragment");
+		s_Data.QuadShader = ResourceLoader::LoadShader("Renderer2D_Quad", "shaders/Renderer2D_Quad.vertex", "shaders/Renderer2D_Quad.fragment");
+		s_Data.TextShader = ResourceLoader::LoadShader("Renderer2D_Text", "shaders/Renderer2D_Text.vertex", "shaders/Renderer2D_Text.fragment");
 
 		// Set first texture slot to 0
 		s_Data.TextureSlots[0] = s_Data.WhiteTexture;
 
 		s_Data.QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
-		s_Data.QuadVertexPositions[1] = {  0.5f, -0.5f, 0.0f, 1.0f };
-		s_Data.QuadVertexPositions[2] = {  0.5f,  0.5f, 0.0f, 1.0f };
+		s_Data.QuadVertexPositions[1] = { 0.5f, -0.5f, 0.0f, 1.0f };
+		s_Data.QuadVertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
 		s_Data.QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
 
 		s_Data.CameraUniformBuffer = UniformBuffer::Create(sizeof(Renderer2DData::CameraData), 0);
@@ -194,7 +190,6 @@ namespace dyxide {
 			s_Data.TextVertexBuffer->SetData(s_Data.TextVertexBufferBase, dataSize);
 
 			auto buf = s_Data.TextVertexBufferBase;
-			s_Data.FontAtlasTexture->Bind(0);
 
 			s_Data.TextShader->Bind();
 			RenderCommand::DrawIndexed(s_Data.TextVertexArray, s_Data.TextIndexCount);
@@ -217,21 +212,21 @@ namespace dyxide {
 	{
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
 			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
-		
+
 		DrawQuad(transform, color);
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
+	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<Texture2D>& texture, const glm::vec4& tintColor)
 	{
-		DrawQuad({ position.x, position.y, 0.0f }, size, texture, tilingFactor, tintColor);
+		DrawQuad({ position.x, position.y, 0.0f }, size, texture, tintColor);
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
+	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<Texture2D>& texture, const glm::vec4& tintColor)
 	{
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
 			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
 
-		DrawQuad(transform, texture, tilingFactor, tintColor);
+		DrawQuad(transform, texture, tintColor);
 	}
 
 	void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color)
@@ -250,7 +245,6 @@ namespace dyxide {
 			s_Data.QuadVertexBufferPtr->Color = color;
 			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
 			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
-			s_Data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
 			s_Data.QuadVertexBufferPtr++;
 		}
 
@@ -259,7 +253,7 @@ namespace dyxide {
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
+	void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, const glm::vec4& tintColor)
 	{
 		constexpr size_t quadVertexCount = 4;
 		constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
@@ -293,7 +287,6 @@ namespace dyxide {
 			s_Data.QuadVertexBufferPtr->Color = tintColor;
 			s_Data.QuadVertexBufferPtr->TexCoord = textureCoords[i];
 			s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
-			s_Data.QuadVertexBufferPtr->TilingFactor = tilingFactor;
 			s_Data.QuadVertexBufferPtr++;
 		}
 
@@ -316,24 +309,24 @@ namespace dyxide {
 		DrawQuad(transform, color);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
+	void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, const glm::vec4& tintColor)
 	{
-		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, texture, tilingFactor, tintColor);
+		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, texture, tintColor);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
+	void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, const glm::vec4& tintColor)
 	{
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
 			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation), { 0.0f, 0.0f, 1.0f })
 			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
 
-		DrawQuad(transform, texture, tilingFactor, tintColor);
+		DrawQuad(transform, texture, tintColor);
 	}
 
 	void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src)
 	{
 		if (src.Texture)
-			DrawQuad(transform, src.Texture, src.TilingFactor, src.Color);
+			DrawQuad(transform, src.Texture, src.Color);
 		else
 			DrawQuad(transform, src.Color);
 	}
@@ -347,7 +340,7 @@ namespace dyxide {
 		FT_Face face = font->GetFace();
 
 		fsScale = 1.0 / (face->size->metrics.ascender - face->size->metrics.descender);
-		
+
 		std::string::const_iterator c;
 		for (c = string.begin(); c != string.end(); c++)
 		{

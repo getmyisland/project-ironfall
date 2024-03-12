@@ -1,11 +1,7 @@
 #pragma once
 
-#include <Engine/Core/Assert.h>
-#include <Engine/Core/PlatformDetection.h>
-
 #include <memory>
-#include <exception>
-#include <filesystem>
+#include <cstdint>
 
 #define BIT(x) (1 << x)
 
@@ -25,32 +21,5 @@ namespace dyxide
 	constexpr Ref<T> CreateRef(Args&& ... args)
 	{
 		return std::make_shared<T>(std::forward<Args>(args)...);
-	}
-
-	static std::string GetCurrentDir()
-	{
-		try
-		{
-			return std::filesystem::current_path().string();
-		}
-		catch (const std::exception& e)
-		{
-			DYXIDE_ASSERT(false, "Failed to retrieve current directory: " + std::string(e.what()));
-			return "";
-		}
-	}
-
-	static std::string GetResourceDir()
-	{
-		std::string currentDir = GetCurrentDir();
-		if (!currentDir.empty())
-		{
-			return currentDir + "/resources/";
-		}
-		else
-		{
-			DYXIDE_ASSERT(false, "Failed to retrieve resource directory");
-			return "";
-		}
 	}
 }

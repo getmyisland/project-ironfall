@@ -29,7 +29,6 @@ namespace dyxide
 		static bool Exists(const std::string& name);
 		static Ref<Shader> Get(const std::string& name);
 
-		static Ref<Shader> LoadFromFile(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath);
 		static Ref<Shader> Compile(const std::string& name, const char* vertexSrc, const char* fragmentSrc);
 
 	private:

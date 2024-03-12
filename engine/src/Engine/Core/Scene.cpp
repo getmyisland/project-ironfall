@@ -112,7 +112,7 @@ namespace dyxide
 				{
 					auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
 
-					Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+					Renderer2D::DrawSprite(transform.GetTransform(), sprite);
 				}
 			}
 
@@ -123,7 +123,7 @@ namespace dyxide
 				{
 					auto [transform, text] = view.get<TransformComponent, TextComponent>(entity);
 
-					Renderer2D::DrawString(text.TextString, transform.GetTransform(), text, (int)entity);
+					Renderer2D::DrawString(text.TextString, transform.GetTransform(), text);
 				}
 			}
 
