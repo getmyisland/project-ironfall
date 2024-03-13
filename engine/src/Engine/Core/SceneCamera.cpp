@@ -32,7 +32,7 @@ namespace dyxide
 
 	void SceneCamera::SetViewportSize(uint32_t width, uint32_t height)
 	{
-		DYXIDE_ASSERT(width > 0 && height > 0, "Invalid Viewport Size");
+		DYXIDE_ASSERT((width > 0 && height > 0), "Invalid Viewport Size (" << width << ", " << height << ")");
 		m_AspectRatio = (float)width / (float)height;
 		RecalculateProjection();
 	}

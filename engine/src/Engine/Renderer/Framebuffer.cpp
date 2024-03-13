@@ -171,7 +171,7 @@ namespace dyxide
 
 		if (m_ColorAttachments.size() > 1)
 		{
-			DYXIDE_ASSERT(m_ColorAttachments.size() <= 4, "IndexOutOfBoundsException");
+			DYXIDE_ASSERT((m_ColorAttachments.size() <= 4), "IndexOutOfBoundsException");
 			GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
 			glDrawBuffers(m_ColorAttachments.size(), buffers);
 		}
@@ -181,7 +181,7 @@ namespace dyxide
 			glDrawBuffer(GL_NONE);
 		}
 
-		DYXIDE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete!");
+		DYXIDE_ASSERT((glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE), "Framebuffer is incomplete!");
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
@@ -212,7 +212,7 @@ namespace dyxide
 
 	int Framebuffer::ReadPixel(uint32_t attachmentIndex, int x, int y)
 	{
-		DYXIDE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "IndexOutOfBoundsException");
+		DYXIDE_ASSERT((attachmentIndex < m_ColorAttachments.size()), "IndexOutOfBoundsException");
 
 		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
 		int pixelData;
@@ -223,7 +223,7 @@ namespace dyxide
 
 	void Framebuffer::ClearAttachment(uint32_t attachmentIndex, int value)
 	{
-		DYXIDE_ASSERT(attachmentIndex < m_ColorAttachments.size(), "IndexOutOfBoundsException");
+		DYXIDE_ASSERT((attachmentIndex < m_ColorAttachments.size()), "IndexOutOfBoundsException");
 
 		auto& spec = m_ColorAttachmentSpecifications[attachmentIndex];
 		glClearTexImage(m_ColorAttachments[attachmentIndex], 0,

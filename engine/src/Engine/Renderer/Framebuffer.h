@@ -72,7 +72,7 @@ namespace dyxide
 
 		uint32_t GetColorAttachmentRendererID(uint32_t index) const
 		{
-			DYXIDE_ASSERT(index < m_ColorAttachments.size(), "ColorAttachment RendererID IndexOutOfBounds");
+			DYXIDE_ASSERT((index < m_ColorAttachments.size()), "ColorAttachment RendererID IndexOutOfBounds");
 			return m_ColorAttachments[index];
 		}
 

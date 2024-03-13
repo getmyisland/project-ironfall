@@ -82,7 +82,7 @@ namespace dyxide
 			m_InternalFormat = internalFormat;
 			m_DataFormat = dataFormat;
 
-			DYXIDE_ASSERT(internalFormat & dataFormat, "Format not supported!");
+			DYXIDE_ASSERT((internalFormat & dataFormat), "Format not supported!");
 
 			glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 			glTextureStorage2D(m_RendererID, 1, internalFormat, m_Width, m_Height);
@@ -107,7 +107,7 @@ namespace dyxide
 	void Texture2D::SetData(void* data, uint32_t size)
 	{
 		uint32_t bpp = m_DataFormat == GL_RGBA ? 4 : 3;
-		DYXIDE_ASSERT(size == m_Width * m_Height * bpp, "Data must be entire texture!");
+		DYXIDE_ASSERT((size == m_Width * m_Height * bpp), "Data must be entire texture. Expected: " << size << " Provided: " << m_Width * m_Height * bpp);
 		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
 	}
 

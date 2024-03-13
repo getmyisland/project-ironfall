@@ -31,7 +31,7 @@ namespace dyxide
 		DYXIDE_INFO("Renderer: " << glGetString(GL_RENDERER));
 		DYXIDE_INFO("Version: " << glGetString(GL_VERSION));
 
-		DYXIDE_ASSERT(GLVersion.major > 4 || (GLVersion.major == 4 && GLVersion.minor >= 5), "dyxide requires at least OpenGL version 4.5!");
+		DYXIDE_ASSERT((GLVersion.major > 4 || (GLVersion.major == 4 && GLVersion.minor >= 5)), "At least OpenGL version 4.5!");
 	}
 
 	void GraphicsContext::SwapBuffers()

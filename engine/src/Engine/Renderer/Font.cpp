@@ -14,10 +14,12 @@ namespace dyxide
 	Font::Font(const std::string& path)
 	{
 		FT_Library ft;
-		DYXIDE_ASSERT(FT_Init_FreeType(&ft), "Could not init FreeType Library");
+		FT_Error errorInitLib = FT_Init_FreeType(&ft);
+		DYXIDE_ASSERT(!static_cast<bool>(errorInitLib), "Could not init FreeType Library with error code " << static_cast<int>(errorInitLib));
 
 		FT_Face face;
-		DYXIDE_ASSERT(FT_New_Face(ft, path.c_str(), 0, &face), "Failed to load font");
+		FT_Error errorNewFace = FT_New_Face(ft, path.c_str(), 0, &face);
+		DYXIDE_ASSERT(!static_cast<bool>(errorNewFace), "Failed to load font with error code " << static_cast<int>(errorNewFace));
 
 		FT_Set_Pixel_Sizes(face, 0, 48);
 
@@ -26,7 +28,7 @@ namespace dyxide
 		for (unsigned char c = 0; c < 128; c++)
 		{
 			// Load character glyph 
-			if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+			if (FT_Load_Char(face, c, FT_LOAD_RENDER) != 0)
 			{
 				DYXIDE_ERROR("Failed to load Glyph");
 				continue;
