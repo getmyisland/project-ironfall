@@ -55,7 +55,8 @@ namespace dyxide
 		}
 
 	protected:
-		virtual void OnUpdateEntities(Timestep ts) = 0;
+		virtual void OnLogicUpdate(Timestep ts) = 0;
+		virtual void OnRenderUI(Timestep ts) = 0;
 
 	private:
 		template<typename T>

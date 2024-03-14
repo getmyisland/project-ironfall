@@ -7,7 +7,6 @@
 
 namespace dyxide
 {
-
 	class Renderer
 	{
 	public:

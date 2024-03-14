@@ -1,23 +1,23 @@
 #pragma once
 
+#include <Engine/Renderer/Font.h>
 #include <Engine/Renderer/Texture.h>
 
-#include <Engine/Renderer/Camera.h>
-#include <Engine/Renderer/Font.h>
-
-#include <Engine/Core/Components.h>
+#include <glm/glm.hpp>
 
 #include <cstdint>
 
 namespace dyxide
 {
-	class Renderer2D
+	class RendererUI
 	{
 	public:
 		static void Init();
 		static void Shutdown();
 
-		static void BeginScene(const Camera& camera, const glm::mat4& transform);
+		static void OnWindowResize(uint32_t width, uint32_t height);
+
+		static void BeginScene();
 		static void EndScene();
 		static void Flush();
 
@@ -34,16 +34,31 @@ namespace dyxide
 		static void DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, const glm::vec4& tintColor = glm::vec4(1.0f));
 		static void DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, const glm::vec4& tintColor = glm::vec4(1.0f));
 
-		static void DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src);
+		struct Sprite
+		{
+			glm::vec4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
+			Ref<Texture2D> Texture;
+
+			Sprite() = default;
+			Sprite(const Sprite&) = default;
+			Sprite(const glm::vec4& color)
+				: Color(color)
+			{
+			}
+		};
+		static void DrawSprite(const glm::mat4& transform, Sprite& sprite);
 
 		struct TextParams
 		{
+			Ref<Font> Font = GetDefaultFont();
 			glm::vec4 Color { 1.0f };
+			float Scale = 26.0f;
 			float Kerning = 0.0f;
 			float LineSpacing = 0.0f;
 		};
-		static void DrawString(const std::string& string, Ref<Font> font, const glm::mat4& transform, const TextParams& textParams);
-		static void DrawString(const std::string& string, const glm::mat4& transform, const TextComponent& component);
+		static void DrawString(const std::string& string, const glm::vec3& position, const TextParams& textParams = TextParams());
+
+		static Ref<Font> GetDefaultFont();
 
 		struct Statistics
 		{

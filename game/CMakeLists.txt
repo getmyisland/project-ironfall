@@ -3,10 +3,9 @@ find_package(OpenGL REQUIRED)
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 # Glob recursively for all source files
-file(GLOB_RECURSE SRC_FILES "${SRC_DIR}/*.cpp" "${SRC_DIR}/*.c")
+file(GLOB_RECURSE SOURCES "${SRC_DIR}/*.cpp" "${SRC_DIR}/*.c")
 
-# Add the library
-add_executable(game ${SRC_FILES})
+add_executable(game ${SOURCES})
 
 target_include_directories(game PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src

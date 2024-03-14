@@ -1,41 +1,30 @@
 #pragma once
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-
-#include <map>
-#include <filesystem>
-
 #include <Engine/Core/Common.h>
 #include <Engine/Renderer/Texture.h>
 
-#include <glm/vec2.hpp>
+#include <string>
+#include <unordered_map>
 
 namespace dyxide
 {
-	struct Character {
-		Ref<Texture2D> Texture;
-		char Char;
-		glm::ivec2   Size;
-		glm::ivec2   Bearing;
-		unsigned int Advance;
-	};
+	struct MSDFData;
 
 	class Font
 	{
 	public:
 		Font(const std::string& path);
-		~Font() = default;
+		~Font();
 
-		std::map<char, Character> GetCharacters() const { return m_Characters; }
-		FT_Face GetFace() const { return m_Face; }
+		const MSDFData* GetMSDFData() const { return m_Data; }
+		Ref<Texture2D> GetAtlasTexture() const { return m_AtlasTexture; }
 
 		static Ref<Font> Create(const std::string& path);
 		static Ref<Font> GetDefault();
 
 	private:
-		std::map<char, Character> m_Characters;
-		FT_Face m_Face;
+		MSDFData* m_Data;
+		Ref<Texture2D> m_AtlasTexture;
 	};
 
 }

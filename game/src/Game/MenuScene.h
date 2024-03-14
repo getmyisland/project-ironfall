@@ -13,6 +13,7 @@ namespace dyxide
 		virtual void OnEvent(Event& e) override;
 
 	protected:
-		virtual void OnUpdateEntities(Timestep ts) override;
+		virtual void OnLogicUpdate(Timestep ts) override;
+		virtual void OnRenderUI(Timestep ts) override;
 	};
 }

@@ -60,36 +60,14 @@ namespace dyxide
 		}
 	};
 
-	struct SpriteRendererComponent
-	{
-		glm::vec4 Color { 1.0f, 1.0f, 1.0f, 1.0f };
-		Ref<Texture2D> Texture;
-
-		SpriteRendererComponent() = default;
-		SpriteRendererComponent(const SpriteRendererComponent&) = default;
-		SpriteRendererComponent(const glm::vec4& color)
-			: Color(color)
-		{
-		}
-	};
-
 	struct CameraComponent
 	{
 		SceneCamera Camera;
-		bool Primary;
+		bool Primary = false;
 		bool FixedAspectRatio = false;
 
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent&) = default;
-	};
-
-	struct TextComponent
-	{
-		std::string TextString;
-		Ref<Font> FontAsset = Font::GetDefault();
-		glm::vec4 Color { 1.0f };
-		float Kerning = 0.0f;
-		float LineSpacing = 0.0f;
 	};
 
 	template<typename... Component>
@@ -98,6 +76,5 @@ namespace dyxide
 	};
 
 	using AllComponents =
-		ComponentGroup<TransformComponent, SpriteRendererComponent,
-		CameraComponent, TextComponent>;
+		ComponentGroup<TransformComponent, CameraComponent>;
 }

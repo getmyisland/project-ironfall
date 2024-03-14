@@ -3,7 +3,8 @@
 #include <Engine/Core/Entity.h>
 
 #include <Engine/Core/Components.h>
-#include <Engine/Renderer/Renderer2D.h>
+#include <Engine/Renderer/RenderCommand.h>
+#include <Engine/Renderer/RendererUI.h>
 
 #include <glm/glm.hpp>
 
@@ -78,12 +79,15 @@ namespace dyxide
 
 	void Scene::OnUpdate(Timestep ts)
 	{
+		// Update game state and variables
+		OnLogicUpdate(ts);
+
 		if (!m_IsPaused || m_StepFrames-- > 0)
 		{
-			OnUpdate(ts);
+			// Update Physics
 		}
 
-		// Render 2D
+		// Try finding the main camera
 		Camera* mainCamera = nullptr;
 		glm::mat4 cameraTransform;
 		{
@@ -101,34 +105,22 @@ namespace dyxide
 			}
 		}
 
+		RenderCommand::SetClearColor({ 0.0f, 0.0f, 0.0f, 1 });
+		RenderCommand::Clear();
+
 		if (mainCamera)
 		{
-			Renderer2D::BeginScene(*mainCamera, cameraTransform);
-
-			// Draw sprites
-			{
-				auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-				for (auto entity : group)
-				{
-					auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-
-					Renderer2D::DrawSprite(transform.GetTransform(), sprite);
-				}
-			}
-
-			// Draw text
-			{
-				auto view = m_Registry.view<TransformComponent, TextComponent>();
-				for (auto entity : view)
-				{
-					auto [transform, text] = view.get<TransformComponent, TextComponent>(entity);
-
-					Renderer2D::DrawString(text.TextString, transform.GetTransform(), text);
-				}
-			}
-
-			Renderer2D::EndScene();
+			// Draw 3D
 		}
+		else
+		{
+			DYXIDE_WARN("No Primary Camera found");
+		}
+
+		// Draw UI
+		RendererUI::BeginScene();
+		OnRenderUI(ts);
+		RendererUI::EndScene();
 	}
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
@@ -219,17 +211,7 @@ namespace dyxide
 	}
 
 	template<>
-	void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component)
-	{
-	}
-
-	template<>
 	void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component)
-	{
-	}
-
-	template<>
-	void Scene::OnComponentAdded<TextComponent>(Entity entity, TextComponent& component)
 	{
 	}
 }

@@ -1,6 +1,6 @@
 #include <dxpch.h>
 #include <Engine/Renderer/Renderer.h>
-#include <Engine/Renderer/Renderer2D.h>
+#include <Engine/Renderer/RendererUI.h>
 
 namespace dyxide {
 
@@ -9,17 +9,18 @@ namespace dyxide {
 	void Renderer::Init()
 	{
 		RenderCommand::Init();
-		Renderer2D::Init();
+		RendererUI::Init();
 	}
 
 	void Renderer::Shutdown()
 	{
-		Renderer2D::Shutdown();
+		RendererUI::Shutdown();
 	}
 
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 	{
 		RenderCommand::SetViewport(0, 0, width, height);
+		RendererUI::OnWindowResize(width, height);
 	}
 
 	void Renderer::BeginScene(Camera& camera)
@@ -40,5 +41,4 @@ namespace dyxide {
 		vertexArray->Bind();
 		RenderCommand::DrawIndexed(vertexArray);
 	}
-
 }

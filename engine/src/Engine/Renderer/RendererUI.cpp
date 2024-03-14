@@ -1,19 +1,22 @@
 #include <dxpch.h>
-#include <Engine/Renderer/Renderer2D.h>
+#include <Engine/Renderer/RendererUI.h>
 
+#include <Engine/Core/Application.h>
+#include <Engine/Core/Window.h>
 #include <Engine/Core/ResourceLoader.h>
 #include <Engine/Renderer/VertexArray.h>
 #include <Engine/Renderer/Shader.h>
 #include <Engine/Renderer/UniformBuffer.h>
 #include <Engine/Renderer/RenderCommand.h>
+#include <Engine/Renderer/MSDFData.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include <array>
 
-namespace dyxide {
-
+namespace dyxide
+{
 	struct QuadVertex
 	{
 		glm::vec3 Position;
@@ -29,7 +32,7 @@ namespace dyxide {
 		glm::vec2 TexCoord;
 	};
 
-	struct Renderer2DData
+	struct RendererUIData
 	{
 		static const uint32_t MaxQuads = 20000;
 		static const uint32_t MaxVertices = MaxQuads * 4;
@@ -55,22 +58,20 @@ namespace dyxide {
 
 		std::array<Ref<Texture2D>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1; // 0 = white texture
+
+		Ref<Font> DefaultFont;
+		Ref<Texture2D> FontAtlasTexture;
+
 		glm::vec4 QuadVertexPositions[4];
 
-		Renderer2D::Statistics Stats;
-
-		struct CameraData
-		{
-			glm::mat4 ViewProjection;
-		};
-		CameraData CameraBuffer;
-		Ref<UniformBuffer> CameraUniformBuffer;
+		RendererUI::Statistics Stats;
 	};
 
-	static Renderer2DData s_Data;
+	static RendererUIData s_Data;
 
-	void Renderer2D::Init()
+	void RendererUI::Init()
 	{
+		// Quad
 		s_Data.QuadVertexArray = VertexArray::Create();
 
 		s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex));
@@ -79,7 +80,7 @@ namespace dyxide {
 			{ ShaderDataType::Float4, "a_Color"        },
 			{ ShaderDataType::Float2, "a_TexCoord"     },
 			{ ShaderDataType::Float,  "a_TexIndex"     }
-		});
+			});
 		s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
 
 		s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVertices];
@@ -111,8 +112,8 @@ namespace dyxide {
 		s_Data.TextVertexBuffer->SetLayout({
 			{ ShaderDataType::Float3, "a_Position"     },
 			{ ShaderDataType::Float4, "a_Color"        },
-			{ ShaderDataType::Float2, "a_TexCoord"     }
-		});
+			{ ShaderDataType::Float2, "a_TexCoord"     },
+			});
 		s_Data.TextVertexArray->AddVertexBuffer(s_Data.TextVertexBuffer);
 		s_Data.TextVertexArray->SetIndexBuffer(quadIB);
 		s_Data.TextVertexBufferBase = new TextVertex[s_Data.MaxVertices];
@@ -121,12 +122,12 @@ namespace dyxide {
 		uint32_t whiteTextureData = 0xffffffff;
 		s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
-		int32_t samplers[s_Data.MaxTextureSlots]{};
+		int32_t samplers[s_Data.MaxTextureSlots] {};
 		for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
 			samplers[i] = i;
 
-		s_Data.QuadShader = ResourceLoader::LoadShader("Renderer2D_Quad", "shaders/Renderer2D_Quad.vertex", "shaders/Renderer2D_Quad.fragment");
-		s_Data.TextShader = ResourceLoader::LoadShader("Renderer2D_Text", "shaders/Renderer2D_Text.vertex", "shaders/Renderer2D_Text.fragment");
+		s_Data.QuadShader = ResourceLoader::LoadShader("RendererUI_Quad", "shaders/RendererUI_Quad.vertex", "shaders/RendererUI_Quad.fragment");
+		s_Data.TextShader = ResourceLoader::LoadShader("RendererUI_Text", "shaders/RendererUI_Text.vertex", "shaders/RendererUI_Text.fragment");
 
 		// Set first texture slot to 0
 		s_Data.TextureSlots[0] = s_Data.WhiteTexture;
@@ -136,28 +137,39 @@ namespace dyxide {
 		s_Data.QuadVertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
 		s_Data.QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
 
-		s_Data.CameraUniformBuffer = UniformBuffer::Create(sizeof(Renderer2DData::CameraData), 0);
+		auto& window = ::dyxide::Application::Get().GetWindow();
+		OnWindowResize(window.GetWidth(), window.GetHeight());
 	}
 
-	void Renderer2D::Shutdown()
+	void RendererUI::Shutdown()
 	{
 		delete[] s_Data.QuadVertexBufferBase;
 	}
 
-	void Renderer2D::BeginScene(const Camera& camera, const glm::mat4& transform)
+	void RendererUI::OnWindowResize(uint32_t width, uint32_t height)
 	{
-		s_Data.CameraBuffer.ViewProjection = camera.GetProjection() * glm::inverse(transform);
-		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
+		glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height));
 
+		s_Data.TextShader->Bind();
+		s_Data.TextShader->SetMat4("u_Projection", projection);
+		s_Data.TextShader->Unbind();
+
+		s_Data.QuadShader->Bind();
+		s_Data.QuadShader->SetMat4("u_Projection", projection);
+		s_Data.QuadShader->Unbind();
+	}
+
+	void RendererUI::BeginScene()
+	{
 		StartBatch();
 	}
 
-	void Renderer2D::EndScene()
+	void RendererUI::EndScene()
 	{
 		Flush();
 	}
 
-	void Renderer2D::StartBatch()
+	void RendererUI::StartBatch()
 	{
 		s_Data.QuadIndexCount = 0;
 		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
@@ -168,7 +180,7 @@ namespace dyxide {
 		s_Data.TextureSlotIndex = 1;
 	}
 
-	void Renderer2D::Flush()
+	void RendererUI::Flush()
 	{
 		if (s_Data.QuadIndexCount)
 		{
@@ -190,6 +202,7 @@ namespace dyxide {
 			s_Data.TextVertexBuffer->SetData(s_Data.TextVertexBufferBase, dataSize);
 
 			auto buf = s_Data.TextVertexBufferBase;
+			s_Data.FontAtlasTexture->Bind(0);
 
 			s_Data.TextShader->Bind();
 			RenderCommand::DrawIndexed(s_Data.TextVertexArray, s_Data.TextIndexCount);
@@ -197,18 +210,18 @@ namespace dyxide {
 		}
 	}
 
-	void Renderer2D::NextBatch()
+	void RendererUI::NextBatch()
 	{
 		Flush();
 		StartBatch();
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
+	void RendererUI::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
 	{
 		DrawQuad({ position.x, position.y, 0.0f }, size, color);
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
+	void RendererUI::DrawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
 	{
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
 			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
@@ -216,12 +229,12 @@ namespace dyxide {
 		DrawQuad(transform, color);
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<Texture2D>& texture, const glm::vec4& tintColor)
+	void RendererUI::DrawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<Texture2D>& texture, const glm::vec4& tintColor)
 	{
 		DrawQuad({ position.x, position.y, 0.0f }, size, texture, tintColor);
 	}
 
-	void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<Texture2D>& texture, const glm::vec4& tintColor)
+	void RendererUI::DrawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<Texture2D>& texture, const glm::vec4& tintColor)
 	{
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
 			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
@@ -229,14 +242,14 @@ namespace dyxide {
 		DrawQuad(transform, texture, tintColor);
 	}
 
-	void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color)
+	void RendererUI::DrawQuad(const glm::mat4& transform, const glm::vec4& color)
 	{
 		constexpr size_t quadVertexCount = 4;
 		const float textureIndex = 0.0f; // White Texture
 		constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
 		const float tilingFactor = 1.0f;
 
-		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
+		if (s_Data.QuadIndexCount >= RendererUIData::MaxIndices)
 			NextBatch();
 
 		for (size_t i = 0; i < quadVertexCount; i++)
@@ -253,12 +266,12 @@ namespace dyxide {
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, const glm::vec4& tintColor)
+	void RendererUI::DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, const glm::vec4& tintColor)
 	{
 		constexpr size_t quadVertexCount = 4;
 		constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
 
-		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
+		if (s_Data.QuadIndexCount >= RendererUIData::MaxIndices)
 			NextBatch();
 
 		float textureIndex = 0.0f;
@@ -273,7 +286,7 @@ namespace dyxide {
 
 		if (textureIndex == 0.0f)
 		{
-			if (s_Data.TextureSlotIndex >= Renderer2DData::MaxTextureSlots)
+			if (s_Data.TextureSlotIndex >= RendererUIData::MaxTextureSlots)
 				NextBatch();
 
 			textureIndex = (float)s_Data.TextureSlotIndex;
@@ -295,12 +308,12 @@ namespace dyxide {
 		s_Data.Stats.QuadCount++;
 	}
 
-	void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const glm::vec4& color)
+	void RendererUI::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const glm::vec4& color)
 	{
 		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, color);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const glm::vec4& color)
+	void RendererUI::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const glm::vec4& color)
 	{
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
 			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation), { 0.0f, 0.0f, 1.0f })
@@ -309,12 +322,12 @@ namespace dyxide {
 		DrawQuad(transform, color);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, const glm::vec4& tintColor)
+	void RendererUI::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, const glm::vec4& tintColor)
 	{
 		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, texture, tintColor);
 	}
 
-	void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, const glm::vec4& tintColor)
+	void RendererUI::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, const glm::vec4& tintColor)
 	{
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
 			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation), { 0.0f, 0.0f, 1.0f })
@@ -323,40 +336,42 @@ namespace dyxide {
 		DrawQuad(transform, texture, tintColor);
 	}
 
-	void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src)
+	void RendererUI::DrawSprite(const glm::mat4& transform, Sprite& sprite)
 	{
-		if (src.Texture)
-			DrawQuad(transform, src.Texture, src.Color);
+		if (sprite.Texture)
+			DrawQuad(transform, sprite.Texture, sprite.Color);
 		else
-			DrawQuad(transform, src.Color);
+			DrawQuad(transform, sprite.Color);
 	}
 
-	void Renderer2D::DrawString(const std::string& string, Ref<Font> font, const glm::mat4& transform, const TextParams& textParams)
+	void RendererUI::DrawString(const std::string& string, const glm::vec3& position, const TextParams& textParams)
 	{
-		double x = 0.0;
-		double fsScale = 1.0;
-		double y = 0.0;
+		const auto& fontGeometry = textParams.Font->GetMSDFData()->FontGeometry;
+		const auto& metrics = fontGeometry.getMetrics();
+		Ref<Texture2D> fontAtlas = textParams.Font->GetAtlasTexture();
 
-		FT_Face face = font->GetFace();
+		s_Data.FontAtlasTexture = fontAtlas;
 
-		fsScale = 1.0 / (face->size->metrics.ascender - face->size->metrics.descender);
+		double x = position.x;
+		double fsScale = textParams.Scale / (metrics.ascenderY - metrics.descenderY);
+		double y = position.y;
 
-		std::string::const_iterator c;
-		for (c = string.begin(); c != string.end(); c++)
+		const float spaceGlyphAdvance = fontGeometry.getGlyph(' ')->getAdvance();
+
+		for (size_t i = 0; i < string.size(); i++)
 		{
-			Character character = font->GetCharacters()[*c];
-
-			if (character.Char == '\r')
+			char character = string[i];
+			if (character == '\r')
 				continue;
 
-			if (character.Char == '\n')
+			if (character == '\n')
 			{
-				x = 0;
-				y -= fsScale * face->size->metrics.height + textParams.LineSpacing;
+				x = position.x;
+				y -= fsScale * metrics.lineHeight + textParams.LineSpacing;
 				continue;
 			}
 
-			/*if (character.Char == ' ')
+			if (character == ' ')
 			{
 				float advance = spaceGlyphAdvance;
 				if (i < string.size() - 1)
@@ -369,42 +384,55 @@ namespace dyxide {
 
 				x += fsScale * advance + textParams.Kerning;
 				continue;
-			}*/
+			}
 
-			if (character.Char == '\t')
+			if (character == '\t')
 			{
-				x += 4.0f * (fsScale * (face->glyph->metrics.horiAdvance / 64.0) + textParams.Kerning);
+				x += 4.0f * (fsScale * spaceGlyphAdvance + textParams.Kerning);
 				continue;
 			}
 
-			glm::vec2 texCoordMin(0.0f, 0.0f);
-			glm::vec2 texCoordMax((float)character.Size.x, (float)character.Size.y);
+			auto glyph = fontGeometry.getGlyph(character);
+			if (!glyph)
+				glyph = fontGeometry.getGlyph('?');
+			if (!glyph)
+				return;
 
-			glm::vec2 quadMin(x + character.Bearing.x, y - character.Bearing.y);
-			glm::vec2 quadMax(quadMin.x + character.Size.x, quadMin.y + character.Size.y);
+			double al, ab, ar, at;
+			glyph->getQuadAtlasBounds(al, ab, ar, at);
+			glm::vec2 texCoordMin((float)al, (float)ab);
+			glm::vec2 texCoordMax((float)ar, (float)at);
 
-			quadMin = glm::vec2(transform * glm::vec4(quadMin, 0.0f, 1.0f));
-			quadMax = glm::vec2(transform * glm::vec4(quadMax, 0.0f, 1.0f));
+			double pl, pb, pr, pt;
+			glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+			glm::vec2 quadMin((float)pl, (float)pb);
+			glm::vec2 quadMax((float)pr, (float)pt);
 
-			texCoordMin /= glm::vec2(character.Texture->GetWidth(), character.Texture->GetHeight());
-			texCoordMax /= glm::vec2(character.Texture->GetWidth(), character.Texture->GetHeight());
+			quadMin *= fsScale, quadMax *= fsScale;
+			quadMin += glm::vec2(x, y);
+			quadMax += glm::vec2(x, y);
 
-			s_Data.TextVertexBufferPtr->Position = transform * glm::vec4(quadMin, 0.0f, 1.0f);
+			float texelWidth = 1.0f / fontAtlas->GetWidth();
+			float texelHeight = 1.0f / fontAtlas->GetHeight();
+			texCoordMin *= glm::vec2(texelWidth, texelHeight);
+			texCoordMax *= glm::vec2(texelWidth, texelHeight);
+
+			s_Data.TextVertexBufferPtr->Position = glm::vec3(quadMin, 0.0f);
 			s_Data.TextVertexBufferPtr->Color = textParams.Color;
 			s_Data.TextVertexBufferPtr->TexCoord = texCoordMin;
 			s_Data.TextVertexBufferPtr++;
 
-			s_Data.TextVertexBufferPtr->Position = transform * glm::vec4(quadMin.x, quadMax.y, 0.0f, 1.0f);
+			s_Data.TextVertexBufferPtr->Position = glm::vec3(quadMin.x, quadMax.y, 0.0f);
 			s_Data.TextVertexBufferPtr->Color = textParams.Color;
 			s_Data.TextVertexBufferPtr->TexCoord = { texCoordMin.x, texCoordMax.y };
 			s_Data.TextVertexBufferPtr++;
 
-			s_Data.TextVertexBufferPtr->Position = transform * glm::vec4(quadMax, 0.0f, 1.0f);
+			s_Data.TextVertexBufferPtr->Position = glm::vec3(quadMax, 0.0f);
 			s_Data.TextVertexBufferPtr->Color = textParams.Color;
 			s_Data.TextVertexBufferPtr->TexCoord = texCoordMax;
 			s_Data.TextVertexBufferPtr++;
 
-			s_Data.TextVertexBufferPtr->Position = transform * glm::vec4(quadMax.x, quadMin.y, 0.0f, 1.0f);
+			s_Data.TextVertexBufferPtr->Position = glm::vec3(quadMax.x, quadMin.y, 0.0f);
 			s_Data.TextVertexBufferPtr->Color = textParams.Color;
 			s_Data.TextVertexBufferPtr->TexCoord = { texCoordMax.x, texCoordMin.y };
 			s_Data.TextVertexBufferPtr++;
@@ -412,23 +440,34 @@ namespace dyxide {
 			s_Data.TextIndexCount += 6;
 			s_Data.Stats.QuadCount++;
 
-			x += fsScale * character.Advance + textParams.Kerning;
+			if (i < string.size() - 1)
+			{
+				double advance = glyph->getAdvance();
+				char nextCharacter = string[i + 1];
+				fontGeometry.getAdvance(advance, character, nextCharacter);
+
+				x += fsScale * advance + textParams.Kerning;
+			}
 		}
 	}
 
-	void Renderer2D::DrawString(const std::string& string, const glm::mat4& transform, const TextComponent& component)
+	Ref<Font> RendererUI::GetDefaultFont()
 	{
-		DrawString(string, component.FontAsset, transform, { component.Color, component.Kerning, component.LineSpacing });
+		if (!s_Data.DefaultFont)
+		{
+			s_Data.DefaultFont = Font::GetDefault();
+		}
+
+		return s_Data.DefaultFont;
 	}
 
-	void Renderer2D::ResetStats()
+	void RendererUI::ResetStats()
 	{
 		memset(&s_Data.Stats, 0, sizeof(Statistics));
 	}
 
-	Renderer2D::Statistics Renderer2D::GetStats()
+	RendererUI::Statistics RendererUI::GetStats()
 	{
 		return s_Data.Stats;
 	}
-
 }
