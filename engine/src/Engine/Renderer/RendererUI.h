@@ -9,6 +9,19 @@
 
 namespace dyxide
 {
+	struct Sprite
+	{
+		glm::vec4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
+		Ref<Texture2D> Texture;
+
+		Sprite() = default;
+		Sprite(const Sprite&) = default;
+		Sprite(const glm::vec4& color)
+			: Color(color)
+		{
+		}
+	};
+
 	class RendererUI
 	{
 	public:
@@ -21,37 +34,12 @@ namespace dyxide
 		static void EndScene();
 		static void Flush();
 
-		static void DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
-		static void DrawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color);
-		static void DrawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<Texture2D>& texture, const glm::vec4& tintColor = glm::vec4(1.0f));
-		static void DrawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<Texture2D>& texture, const glm::vec4& tintColor = glm::vec4(1.0f));
-
-		static void DrawQuad(const glm::mat4& transform, const glm::vec4& color);
-		static void DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, const glm::vec4& tintColor = glm::vec4(1.0f));
-
-		static void DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const glm::vec4& color);
-		static void DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const glm::vec4& color);
-		static void DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, const glm::vec4& tintColor = glm::vec4(1.0f));
-		static void DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, const glm::vec4& tintColor = glm::vec4(1.0f));
-
-		struct Sprite
-		{
-			glm::vec4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
-			Ref<Texture2D> Texture;
-
-			Sprite() = default;
-			Sprite(const Sprite&) = default;
-			Sprite(const glm::vec4& color)
-				: Color(color)
-			{
-			}
-		};
-		static void DrawSprite(const glm::mat4& transform, Sprite& sprite);
+		static void DrawSprite(Sprite& sprite, const glm::vec3& position, const glm::vec3& scale = glm::vec3 { 100.0f });
 
 		struct TextParams
 		{
 			Ref<Font> Font = GetDefaultFont();
-			glm::vec4 Color { 1.0f };
+			glm::vec4 Color{ 1.0f };
 			float Scale = 26.0f;
 			float Kerning = 0.0f;
 			float LineSpacing = 0.0f;
@@ -72,6 +60,9 @@ namespace dyxide
 		static Statistics GetStats();
 
 	private:
+		static void DrawQuad(const glm::mat4& transform, const glm::vec4& color);
+		static void DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, const glm::vec4& tintColor = glm::vec4(1.0f));
+
 		static void StartBatch();
 		static void NextBatch();
 	};

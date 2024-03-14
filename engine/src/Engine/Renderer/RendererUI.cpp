@@ -216,32 +216,6 @@ namespace dyxide
 		StartBatch();
 	}
 
-	void RendererUI::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
-	{
-		DrawQuad({ position.x, position.y, 0.0f }, size, color);
-	}
-
-	void RendererUI::DrawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
-	{
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
-
-		DrawQuad(transform, color);
-	}
-
-	void RendererUI::DrawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<Texture2D>& texture, const glm::vec4& tintColor)
-	{
-		DrawQuad({ position.x, position.y, 0.0f }, size, texture, tintColor);
-	}
-
-	void RendererUI::DrawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<Texture2D>& texture, const glm::vec4& tintColor)
-	{
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
-
-		DrawQuad(transform, texture, tintColor);
-	}
-
 	void RendererUI::DrawQuad(const glm::mat4& transform, const glm::vec4& color)
 	{
 		constexpr size_t quadVertexCount = 4;
@@ -308,36 +282,12 @@ namespace dyxide
 		s_Data.Stats.QuadCount++;
 	}
 
-	void RendererUI::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const glm::vec4& color)
+	void RendererUI::DrawSprite(Sprite& sprite, const glm::vec3& position, const glm::vec3& scale)
 	{
-		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, color);
-	}
+		glm::mat4 transform = glm::mat4(1.0f);
+		transform = glm::translate(transform, position);
+		transform = glm::scale(transform, scale);
 
-	void RendererUI::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const glm::vec4& color)
-	{
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation), { 0.0f, 0.0f, 1.0f })
-			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
-
-		DrawQuad(transform, color);
-	}
-
-	void RendererUI::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, const glm::vec4& tintColor)
-	{
-		DrawRotatedQuad({ position.x, position.y, 0.0f }, size, rotation, texture, tintColor);
-	}
-
-	void RendererUI::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, float rotation, const Ref<Texture2D>& texture, const glm::vec4& tintColor)
-	{
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-			* glm::rotate(glm::mat4(1.0f), glm::radians(rotation), { 0.0f, 0.0f, 1.0f })
-			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
-
-		DrawQuad(transform, texture, tintColor);
-	}
-
-	void RendererUI::DrawSprite(const glm::mat4& transform, Sprite& sprite)
-	{
 		if (sprite.Texture)
 			DrawQuad(transform, sprite.Texture, sprite.Color);
 		else
