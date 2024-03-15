@@ -282,19 +282,20 @@ namespace dyxide
 		s_Data.Stats.QuadCount++;
 	}
 
-	void RendererUI::DrawSprite(Sprite& sprite, const glm::vec3& position, const glm::vec3& scale)
+	void RendererUI::DrawSprite(Sprite& sprite, const glm::mat4& transform)
 	{
-		glm::mat4 transform = glm::mat4(1.0f);
-		transform = glm::translate(transform, position);
-		transform = glm::scale(transform, scale);
-
 		if (sprite.Texture)
 			DrawQuad(transform, sprite.Texture, sprite.Color);
 		else
 			DrawQuad(transform, sprite.Color);
 	}
 
-	void RendererUI::DrawString(const std::string& string, const glm::vec3& position, const TextParams& textParams)
+	void RendererUI::DrawSprite(Sprite& sprite, const Transform& transform)
+	{
+		DrawSprite(sprite, transform.GetTransform());
+	}
+
+	void RendererUI::DrawString(const std::string& string, const glm::mat4& transform, const TextParams& textParams)
 	{
 		const auto& fontGeometry = textParams.Font->GetMSDFData()->FontGeometry;
 		const auto& metrics = fontGeometry.getMetrics();
@@ -302,9 +303,9 @@ namespace dyxide
 
 		s_Data.FontAtlasTexture = fontAtlas;
 
-		double x = position.x;
-		double fsScale = textParams.Scale / (metrics.ascenderY - metrics.descenderY);
-		double y = position.y;
+		double x = 0.0;
+		double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
+		double y = 0.0;
 
 		const float spaceGlyphAdvance = fontGeometry.getGlyph(' ')->getAdvance();
 
@@ -316,7 +317,7 @@ namespace dyxide
 
 			if (character == '\n')
 			{
-				x = position.x;
+				x = 0.0;
 				y -= fsScale * metrics.lineHeight + textParams.LineSpacing;
 				continue;
 			}
@@ -367,22 +368,22 @@ namespace dyxide
 			texCoordMin *= glm::vec2(texelWidth, texelHeight);
 			texCoordMax *= glm::vec2(texelWidth, texelHeight);
 
-			s_Data.TextVertexBufferPtr->Position = glm::vec3(quadMin, 0.0f);
+			s_Data.TextVertexBufferPtr->Position = transform * glm::vec4(quadMin, 0.0f, 1.0f);
 			s_Data.TextVertexBufferPtr->Color = textParams.Color;
 			s_Data.TextVertexBufferPtr->TexCoord = texCoordMin;
 			s_Data.TextVertexBufferPtr++;
 
-			s_Data.TextVertexBufferPtr->Position = glm::vec3(quadMin.x, quadMax.y, 0.0f);
+			s_Data.TextVertexBufferPtr->Position = transform * glm::vec4(quadMin.x, quadMax.y, 0.0f, 1.0f);
 			s_Data.TextVertexBufferPtr->Color = textParams.Color;
 			s_Data.TextVertexBufferPtr->TexCoord = { texCoordMin.x, texCoordMax.y };
 			s_Data.TextVertexBufferPtr++;
 
-			s_Data.TextVertexBufferPtr->Position = glm::vec3(quadMax, 0.0f);
+			s_Data.TextVertexBufferPtr->Position = transform * glm::vec4(quadMax, 0.0f, 1.0f);
 			s_Data.TextVertexBufferPtr->Color = textParams.Color;
 			s_Data.TextVertexBufferPtr->TexCoord = texCoordMax;
 			s_Data.TextVertexBufferPtr++;
 
-			s_Data.TextVertexBufferPtr->Position = glm::vec3(quadMax.x, quadMin.y, 0.0f);
+			s_Data.TextVertexBufferPtr->Position = transform * glm::vec4(quadMax.x, quadMin.y, 0.0f, 1.0f);
 			s_Data.TextVertexBufferPtr->Color = textParams.Color;
 			s_Data.TextVertexBufferPtr->TexCoord = { texCoordMax.x, texCoordMin.y };
 			s_Data.TextVertexBufferPtr++;
@@ -399,6 +400,11 @@ namespace dyxide
 				x += fsScale * advance + textParams.Kerning;
 			}
 		}
+	}
+
+	void RendererUI::DrawString(const std::string& string, const Transform& transform, const TextParams& textParams)
+	{
+		DrawString(string, transform.GetTransform(), textParams);
 	}
 
 	Ref<Font> RendererUI::GetDefaultFont()

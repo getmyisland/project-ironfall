@@ -34,9 +34,9 @@ namespace dyxide
 		auto width = window.GetWidth();
 		auto height = window.GetHeight();
 
-		glm::vec3 centerPos = glm::vec3(width / 2, height / 2, 0);
-		RendererUI::DrawSprite(m_Sprite, centerPos + glm::vec3(-40, 80, 0));
-		RendererUI::DrawString("Dyxide", centerPos - glm::vec3(26 * 3, 26 / 2, 0));
+		glm::vec3 center{ width / 2, height / 2, 0 };
+		RendererUI::DrawSprite(m_Sprite, { center + glm::vec3(-50, 100, 0) });
+		RendererUI::DrawString("Dyxide", { center - glm::vec3(175, 55, 0) });
 	}
 
 	void MenuScene::OnEvent(Event& e)

@@ -37,15 +37,15 @@ namespace dyxide
 		}
 	};
 
-	struct TransformComponent
+	struct Transform
 	{
 		glm::vec3 Translation = { 0.0f, 0.0f, 0.0f };
 		glm::vec3 Rotation = { 0.0f, 0.0f, 0.0f };
-		glm::vec3 Scale = { 1.0f, 1.0f, 1.0f };
+		glm::vec3 Scale = { 100.0f, 100.0f, 100.0f };
 
-		TransformComponent() = default;
-		TransformComponent(const TransformComponent&) = default;
-		TransformComponent(const glm::vec3& translation)
+		Transform() = default;
+		Transform(const Transform&) = default;
+		Transform(const glm::vec3& translation)
 			: Translation(translation)
 		{
 		}
@@ -58,6 +58,11 @@ namespace dyxide
 				* rotation
 				* glm::scale(glm::mat4(1.0f), Scale);
 		}
+	};
+
+	struct TransformComponent : public Transform
+	{
+		// Nothing
 	};
 
 	struct CameraComponent

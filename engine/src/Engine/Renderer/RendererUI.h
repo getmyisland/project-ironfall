@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Engine/Core/Components.h>
 #include <Engine/Renderer/Font.h>
 #include <Engine/Renderer/Texture.h>
 
@@ -34,17 +35,18 @@ namespace dyxide
 		static void EndScene();
 		static void Flush();
 
-		static void DrawSprite(Sprite& sprite, const glm::vec3& position, const glm::vec3& scale = glm::vec3 { 100.0f });
+		static void DrawSprite(Sprite& sprite, const Transform& transform);
+		static void DrawSprite(Sprite& sprite, const glm::mat4& transform);
 
 		struct TextParams
 		{
 			Ref<Font> Font = GetDefaultFont();
 			glm::vec4 Color{ 1.0f };
-			float Scale = 26.0f;
 			float Kerning = 0.0f;
 			float LineSpacing = 0.0f;
 		};
-		static void DrawString(const std::string& string, const glm::vec3& position, const TextParams& textParams = TextParams());
+		static void DrawString(const std::string& string, const Transform& transform, const TextParams& textParams = TextParams());
+		static void DrawString(const std::string& string, const glm::mat4& transform, const TextParams& textParams = TextParams());
 
 		static Ref<Font> GetDefaultFont();
 
