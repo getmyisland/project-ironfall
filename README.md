@@ -19,9 +19,12 @@ $ cd dyxide
 $ git submodule update --init --recursive
 ```
 
-Build the project using CMake:
+### CMake
 
 ```
-cmake -B build
-cmake --build build
+# Generate build files/folders
+$ cmake -B build
+
+# Build the project
+$ cmake --build build
 ```
