@@ -147,6 +147,6 @@ namespace dyxide
 
 	Ref<Font> Font::GetDefault()
 	{
-		return ResourceLoader::LoadFont("/fonts/opensans/OpenSans-Regular.ttf");
+		return ResourceLoader::LoadFont("/fonts/bunkentechsans/BunkenTechSans-ExtraBold.ttf");
 	}
 }
