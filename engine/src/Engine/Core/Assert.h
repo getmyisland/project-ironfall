@@ -12,5 +12,5 @@
         } \
     } while (false)
 #else
-#   define ASSERT(condition, ...) do { } while (false)
+#   define DYXIDE_ASSERT(condition, ...) do { } while (false)
 #endif
