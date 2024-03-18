@@ -1,7 +1,5 @@
 find_package(OpenGL REQUIRED)
 
-set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
-
 # Glob recursively for all source files
 file(GLOB_RECURSE SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
