@@ -29,10 +29,10 @@ target_include_directories(engine PUBLIC
 
 target_link_libraries(engine PUBLIC
     ${OPENGL_LIBRARIES}
-	assimp
     glfw
 	glm
 	msdf-atlas-gen
 	msdfgen
 	freetype
+	assimp
 )
