@@ -17,6 +17,7 @@ target_include_directories(engine PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_SOURCE_DIR}/external/glad/include
     ${CMAKE_SOURCE_DIR}/external/glfw/include
+    ${CMAKE_SOURCE_DIR}/external/assimp/include
     ${CMAKE_SOURCE_DIR}/external/entt/include
 	${CMAKE_SOURCE_DIR}/external/msdf-atlas-gen/msdf-atlas-gen
 	${CMAKE_SOURCE_DIR}/external/msdf-atlas-gen/msdfgen
@@ -28,6 +29,7 @@ target_include_directories(engine PUBLIC
 
 target_link_libraries(engine PUBLIC
     ${OPENGL_LIBRARIES}
+	assimp
     glfw
 	glm
 	msdf-atlas-gen
