@@ -21,8 +21,6 @@ namespace dyxide
 		m_Window->SetEventCallback(DYXIDE_BIND_EVENT_FN(Application::OnEvent));
 
 		Renderer::Init();
-
-		LoadScene(specification.DefaultScene);
 	}
 
 	Application::~Application()
@@ -50,21 +48,6 @@ namespace dyxide
 
 		if (!e.Handled && m_Scene)
 			m_Scene->OnEvent(e);
-	}
-
-	void Application::LoadScene(Ref<Scene> scene)
-	{
-		if (!scene)
-			return;
-
-		if (m_Scene == scene)
-			return;
-
-		if (m_Scene)
-			m_Scene->OnUnload();
-
-		m_Scene = std::move(scene);
-		m_Scene->OnLoad();
 	}
 
 	void Application::Run()

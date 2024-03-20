@@ -9,6 +9,7 @@
 #include <Engine/Events/ApplicationEvent.h>
 
 #include <mutex>
+#include <type_traits>
 
 int main(int argc, char** argv);
 
@@ -28,7 +29,6 @@ namespace dyxide
 	struct ApplicationSpecification
 	{
 		std::string Name = "Application";
-		Ref<Scene> DefaultScene;
 		ApplicationCommandLineArgs CommandLineArgs;
 	};
 
@@ -40,7 +40,19 @@ namespace dyxide
 
 		void OnEvent(Event& e);
 
-		void LoadScene(Ref<Scene> scene);
+		template<typename T>
+		void LoadScene()
+		{
+			static_assert(std::is_base_of<Scene, T>::value, "Provided class does not derive from Scene");
+
+			if (m_Scene)
+			{
+				m_Scene->OnUnload();
+			}
+
+			m_Scene = CreateRef<T>();
+			m_Scene->OnLoad();
+		}
 
 		Window& GetWindow() { return *m_Window; }
 

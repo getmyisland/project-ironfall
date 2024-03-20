@@ -9,7 +9,7 @@ namespace dyxide
 	public:
 		Game(const ApplicationSpecification& specification) : Application(specification)
 		{
-
+			LoadScene<MenuScene>();
 		}
 	};
 
@@ -17,7 +17,6 @@ namespace dyxide
 	{
 		ApplicationSpecification specification;
 		specification.Name = "Dyxide";
-		specification.DefaultScene = CreateRef<MenuScene>();
 		specification.CommandLineArgs = args;
 
 		return new Game(specification);
