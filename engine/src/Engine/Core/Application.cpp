@@ -20,6 +20,7 @@ namespace dyxide
 		m_Window = Window::Create(WindowProps(m_Specification.Name));
 		m_Window->SetEventCallback(DYXIDE_BIND_EVENT_FN(Application::OnEvent));
 
+		Input::Init();
 		Renderer::Init();
 	}
 
