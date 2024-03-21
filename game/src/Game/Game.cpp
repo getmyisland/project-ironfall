@@ -1,6 +1,7 @@
 #include <Engine/Core/EntryPoint.h>
 
 #include <Game/MenuScene.h>
+#include <Game/PlayScene.h>
 
 namespace dyxide
 {
@@ -9,7 +10,7 @@ namespace dyxide
 	public:
 		Game(const ApplicationSpecification& specification) : Application(specification)
 		{
-			LoadScene<MenuScene>();
+			LoadScene<PlayScene>();
 		}
 	};
 

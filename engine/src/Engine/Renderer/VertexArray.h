@@ -3,6 +3,8 @@
 #include <Engine/Core/Common.h>
 #include <Engine/Renderer/Buffer.h>
 
+#include <vector>
+
 namespace dyxide
 {
 	class VertexArray

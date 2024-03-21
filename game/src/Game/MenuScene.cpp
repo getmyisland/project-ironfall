@@ -8,14 +8,22 @@
 
 namespace dyxide
 {
-	Sprite m_Sprite;
+	Entity g_Sun;
+	Entity g_Title;
 
 	void MenuScene::OnLoad()
 	{
-		auto camera = CreateEntity("camera");
+		auto camera = CreateEntity("Camera");
 		camera.AddComponent<CameraComponent>().Primary = true;
 
-		m_Sprite.Texture = ResourceLoader::LoadTexture2D("textures/Sun.png");
+		g_Title = CreateEntity("Title");
+		g_Title.AddComponent<TextComponent>("Dyxide");
+
+		g_Sun = CreateEntity("Sun");
+		g_Sun.AddComponent<SpriteRendererComponent>().Texture = ResourceLoader::LoadTexture2D("textures/Sun.png");
+
+		auto& window = ::dyxide::Application::Get().GetWindow();
+		OnViewportResize(window.GetWidth(), window.GetHeight());
 	}
 
 	void MenuScene::OnUnload()
@@ -23,20 +31,16 @@ namespace dyxide
 
 	}
 
+	void MenuScene::OnViewportResize(uint32_t width, uint32_t height)
+	{
+		glm::vec3 center{ width / 2, height / 2, 0 };
+		g_Title.GetComponent<TransformComponent>().Translation = { center - glm::vec3(175, 55, 0) };
+		g_Sun.GetComponent<TransformComponent>().Translation = { center + glm::vec3(-50, 100, 0) };
+	}
+
 	void MenuScene::OnLogicUpdate(Timestep ts)
 	{
 
-	}
-
-	void MenuScene::OnRenderUI(Timestep ts)
-	{
-		auto& window = ::dyxide::Application::Get().GetWindow();
-		auto width = window.GetWidth();
-		auto height = window.GetHeight();
-
-		glm::vec3 center{ width / 2, height / 2, 0 };
-		RendererUI::DrawSprite(m_Sprite, { center + glm::vec3(-50, 100, 0) });
-		RendererUI::DrawString("Dyxide", { center - glm::vec3(175, 55, 0) });
 	}
 
 	void MenuScene::OnEvent(Event& e)

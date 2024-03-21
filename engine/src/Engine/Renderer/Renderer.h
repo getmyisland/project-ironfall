@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Engine/Core/Common.h>
-#include <Engine/Renderer/Camera.h>
+#include <Engine/Core/Components.h>
 #include <Engine/Renderer/RenderCommand.h>
 #include <Engine/Renderer/Shader.h>
 
@@ -15,17 +15,17 @@ namespace dyxide
 
 		static void OnWindowResize(uint32_t width, uint32_t height);
 
-		static void BeginScene(Camera& camera);
+		static void BeginScene(CameraComponent& camera, TransformComponent& cameraTransform);
 		static void EndScene();
 
-		static void Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray, const glm::mat4& transform = glm::mat4(1.0f));
+		static void DrawModel(const glm::mat4& transform, ModelRendererComponent& mrc);
 
-	private:
-		struct SceneData
+		struct Statistics
 		{
-			glm::mat4 ViewProjectionMatrix;
+			uint32_t DrawCalls = 0;
+			uint32_t ModelCount = 0;
 		};
-
-		static Scope<SceneData> s_SceneData;
+		static void ResetStats();
+		static Statistics GetStats();
 	};
 }

@@ -10,19 +10,6 @@
 
 namespace dyxide
 {
-	struct Sprite
-	{
-		glm::vec4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
-		Ref<Texture2D> Texture;
-
-		Sprite() = default;
-		Sprite(const Sprite&) = default;
-		Sprite(const glm::vec4& color)
-			: Color(color)
-		{
-		}
-	};
-
 	class RendererUI
 	{
 	public:
@@ -35,20 +22,16 @@ namespace dyxide
 		static void EndScene();
 		static void Flush();
 
-		static void DrawSprite(Sprite& sprite, const Transform& transform);
-		static void DrawSprite(Sprite& sprite, const glm::mat4& transform);
+		static void DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src);
 
 		struct TextParams
 		{
-			Ref<Font> Font = GetDefaultFont();
 			glm::vec4 Color{ 1.0f };
 			float Kerning = 0.0f;
 			float LineSpacing = 0.0f;
 		};
-		static void DrawString(const std::string& string, const Transform& transform, const TextParams& textParams = TextParams());
-		static void DrawString(const std::string& string, const glm::mat4& transform, const TextParams& textParams = TextParams());
-
-		static Ref<Font> GetDefaultFont();
+		static void DrawString(const std::string& string, Ref<Font> font, const glm::mat4& transform, const TextParams& textParams);
+		static void DrawString(const std::string& string, const glm::mat4& transform, const TextComponent& component);
 
 		struct Statistics
 		{

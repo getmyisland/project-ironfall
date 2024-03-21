@@ -59,7 +59,6 @@ namespace dyxide
 		std::array<Ref<Texture2D>, MaxTextureSlots> TextureSlots;
 		uint32_t TextureSlotIndex = 1; // 0 = white texture
 
-		Ref<Font> DefaultFont;
 		Ref<Texture2D> FontAtlasTexture;
 
 		glm::vec4 QuadVertexPositions[4];
@@ -122,12 +121,8 @@ namespace dyxide
 		uint32_t whiteTextureData = 0xffffffff;
 		s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
-		int32_t samplers[s_Data.MaxTextureSlots] {};
-		for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
-			samplers[i] = i;
-
-		s_Data.QuadShader = ResourceLoader::LoadShader("RendererUI_Quad", "shaders/RendererUI_Quad.vertex", "shaders/RendererUI_Quad.fragment");
-		s_Data.TextShader = ResourceLoader::LoadShader("RendererUI_Text", "shaders/RendererUI_Text.vertex", "shaders/RendererUI_Text.fragment");
+		s_Data.QuadShader = ResourceLoader::LoadShader("shaders/RendererUI_Quad.vertex", "shaders/RendererUI_Quad.fragment");
+		s_Data.TextShader = ResourceLoader::LoadShader("shaders/RendererUI_Text.vertex", "shaders/RendererUI_Text.fragment");
 
 		// Set first texture slot to 0
 		s_Data.TextureSlots[0] = s_Data.WhiteTexture;
@@ -193,6 +188,7 @@ namespace dyxide
 
 			s_Data.QuadShader->Bind();
 			RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
+			s_Data.QuadShader->Unbind();
 			s_Data.Stats.DrawCalls++;
 		}
 
@@ -206,6 +202,7 @@ namespace dyxide
 
 			s_Data.TextShader->Bind();
 			RenderCommand::DrawIndexed(s_Data.TextVertexArray, s_Data.TextIndexCount);
+			s_Data.TextShader->Unbind();
 			s_Data.Stats.DrawCalls++;
 		}
 	}
@@ -282,24 +279,19 @@ namespace dyxide
 		s_Data.Stats.QuadCount++;
 	}
 
-	void RendererUI::DrawSprite(Sprite& sprite, const glm::mat4& transform)
+	void RendererUI::DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src)
 	{
-		if (sprite.Texture)
-			DrawQuad(transform, sprite.Texture, sprite.Color);
+		if (src.Texture)
+			DrawQuad(transform, src.Texture, src.Color);
 		else
-			DrawQuad(transform, sprite.Color);
+			DrawQuad(transform, src.Color);
 	}
 
-	void RendererUI::DrawSprite(Sprite& sprite, const Transform& transform)
+	void RendererUI::DrawString(const std::string& string, Ref<Font> font, const glm::mat4& transform, const TextParams& textParams)
 	{
-		DrawSprite(sprite, transform.GetTransform());
-	}
-
-	void RendererUI::DrawString(const std::string& string, const glm::mat4& transform, const TextParams& textParams)
-	{
-		const auto& fontGeometry = textParams.Font->GetMSDFData()->FontGeometry;
+		const auto& fontGeometry = font->GetMSDFData()->FontGeometry;
 		const auto& metrics = fontGeometry.getMetrics();
-		Ref<Texture2D> fontAtlas = textParams.Font->GetAtlasTexture();
+		Ref<Texture2D> fontAtlas = font->GetAtlasTexture();
 
 		s_Data.FontAtlasTexture = fontAtlas;
 
@@ -402,19 +394,9 @@ namespace dyxide
 		}
 	}
 
-	void RendererUI::DrawString(const std::string& string, const Transform& transform, const TextParams& textParams)
+	void RendererUI::DrawString(const std::string& string, const glm::mat4& transform, const TextComponent& component)
 	{
-		DrawString(string, transform.GetTransform(), textParams);
-	}
-
-	Ref<Font> RendererUI::GetDefaultFont()
-	{
-		if (!s_Data.DefaultFont)
-		{
-			s_Data.DefaultFont = Font::GetDefault();
-		}
-
-		return s_Data.DefaultFont;
+		DrawString(string, component.FontAsset, transform, { component.Color, component.Kerning, component.LineSpacing });
 	}
 
 	void RendererUI::ResetStats()

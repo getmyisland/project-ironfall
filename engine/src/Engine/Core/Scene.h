@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Engine/Events/Event.h>
-#include <Engine/Renderer/Camera.h>
 #include <Engine/Core/Timestep.h>
 #include <Engine/Core/UUID.h>
 
@@ -34,7 +33,7 @@ namespace dyxide
 		virtual void OnUnload() = 0;
 		virtual void OnEvent(Event& e) = 0;
 
-		void OnViewportResize(uint32_t width, uint32_t height);
+		void OnWindowResize(uint32_t width, uint32_t height);
 
 		Entity DuplicateEntity(Entity entity);
 
@@ -56,7 +55,7 @@ namespace dyxide
 
 	protected:
 		virtual void OnLogicUpdate(Timestep ts) = 0;
-		virtual void OnRenderUI(Timestep ts) = 0;
+		virtual void OnViewportResize(uint32_t width, uint32_t height) = 0;
 
 	private:
 		template<typename T>

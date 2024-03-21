@@ -11,7 +11,7 @@ namespace dyxide
 		return CreateRef<VertexBuffer>(size);
 	}
 
-	Ref<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t size)
+	Ref<VertexBuffer> VertexBuffer::Create(void* vertices, uint32_t size)
 	{
 		return CreateRef<VertexBuffer>(vertices, size);
 	}
@@ -32,7 +32,7 @@ namespace dyxide
 		glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
 	}
 
-	VertexBuffer::VertexBuffer(float* vertices, uint32_t size)
+	VertexBuffer::VertexBuffer(void* vertices, uint32_t size)
 	{
 		glCreateBuffers(1, &m_RendererID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);

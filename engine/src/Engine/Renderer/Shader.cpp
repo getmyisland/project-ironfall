@@ -17,8 +17,6 @@
 
 namespace dyxide
 {
-	std::unordered_map<std::string, Ref<Shader>> Shader::s_Cache;
-
 	Shader::Shader(uint32_t id) : m_RendererID(id)
 	{
 
@@ -53,7 +51,7 @@ namespace dyxide
 		}
 	}
 
-	Ref<Shader> Shader::Create(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath)
+	Ref<Shader> Shader::Create(const std::string& vertexPath, const std::string& fragmentPath)
 	{
 		std::string vertexCode;
 		std::string fragmentCode;
@@ -97,13 +95,11 @@ namespace dyxide
 			return nullptr;
 		}
 
-		return Shader::Compile(name, vertexCode.c_str(), fragmentCode.c_str());
+		return Shader::Compile(vertexCode.c_str(), fragmentCode.c_str());
 	}
 
-	Ref<Shader> Shader::Compile(const std::string& name, const char* vertexSrc, const char* fragmentSrc)
+	Ref<Shader> Shader::Compile(const char* vertexSrc, const char* fragmentSrc)
 	{
-		DYXIDE_ASSERT(!Exists(name), "Shader with name already exists!");
-
 		unsigned int vertex = glCreateShader(GL_VERTEX_SHADER);
 		glShaderSource(vertex, 1, &vertexSrc, NULL);
 		glCompileShader(vertex);
@@ -123,9 +119,7 @@ namespace dyxide
 		glDeleteShader(vertex);
 		glDeleteShader(fragment);
 
-		Ref<Shader> shader = CreateRef<Shader>(id);
-		s_Cache[name] = shader;
-		return shader;
+		return CreateRef<Shader>(id);
 	}
 
 	void Shader::Bind() const
@@ -178,16 +172,5 @@ namespace dyxide
 	{
 		GLint location = glGetUniformLocation(m_RendererID, name.c_str());
 		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
-	}
-
-	Ref<Shader> Shader::Get(const std::string& name)
-	{
-		DYXIDE_ASSERT(Exists(name), "Shader not found!");
-		return s_Cache[name];
-	}
-
-	bool Shader::Exists(const std::string& name)
-	{
-		return s_Cache.find(name) != s_Cache.end();
 	}
 }

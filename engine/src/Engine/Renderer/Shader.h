@@ -3,7 +3,6 @@
 #include <Engine/Core/Common.h>
 
 #include <string>
-#include <unordered_map>
 
 #include <glm/glm.hpp>
 
@@ -26,16 +25,10 @@ namespace dyxide
 		void SetFloat4(const std::string& name, const glm::vec4& value);
 		void SetMat4(const std::string& name, const glm::mat4& value);
 
-		static bool Exists(const std::string& name);
-		static Ref<Shader> Get(const std::string& name);
-
-		static Ref<Shader> Create(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath);
-		static Ref<Shader> Compile(const std::string& name, const char* vertexSrc, const char* fragmentSrc);
+		static Ref<Shader> Create(const std::string& vertexPath, const std::string& fragmentPath);
+		static Ref<Shader> Compile(const char* vertexSrc, const char* fragmentSrc);
 
 	private:
 		uint32_t m_RendererID;
-
-	private:
-		static std::unordered_map<std::string, Ref<Shader>> s_Cache;
 	};
 }

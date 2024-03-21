@@ -97,6 +97,10 @@ namespace dyxide
 
 			stbi_image_free(data);
 		}
+		else
+		{
+			DYXIDE_ERROR("Texture could not be loaded at path: " << path);
+		}
 	}
 
 	Texture2D::~Texture2D()

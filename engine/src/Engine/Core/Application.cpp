@@ -6,6 +6,8 @@
 #include <Engine/Core/Time.h>
 #include <Engine/Events/Event.h>
 #include <Engine/Renderer/Renderer.h>
+#include <Engine/Renderer/RenderCommand.h>
+#include <Engine/Renderer/RendererUI.h>
 
 namespace dyxide
 {
@@ -21,12 +23,16 @@ namespace dyxide
 		m_Window->SetEventCallback(DYXIDE_BIND_EVENT_FN(Application::OnEvent));
 
 		Input::Init();
+
+		RenderCommand::Init();
 		Renderer::Init();
+		RendererUI::Init();
 	}
 
 	Application::~Application()
 	{
 		Renderer::Shutdown();
+		RendererUI::Shutdown();
 	}
 
 	void Application::Close()
@@ -86,7 +92,12 @@ namespace dyxide
 		}
 
 		m_Minimized = false;
+
+		RenderCommand::SetViewport(0, 0, e.GetWidth(), e.GetHeight());
 		Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
+		RendererUI::OnWindowResize(e.GetWidth(), e.GetHeight());
+
+		m_Scene->OnWindowResize(e.GetWidth(), e.GetHeight());
 
 		return false;
 	}

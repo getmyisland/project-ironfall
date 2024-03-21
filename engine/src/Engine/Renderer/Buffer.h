@@ -113,7 +113,7 @@ namespace dyxide
 	{
 	public:
 		VertexBuffer(uint32_t size);
-		VertexBuffer(float* vertices, uint32_t size);
+		VertexBuffer(void* vertices, uint32_t size);
 		virtual ~VertexBuffer();
 
 		void Bind() const;
@@ -125,7 +125,7 @@ namespace dyxide
 		void SetLayout(const BufferLayout& layout) { m_Layout = layout; }
 
 		static Ref<VertexBuffer> Create(uint32_t size);
-		static Ref<VertexBuffer> Create(float* vertices, uint32_t size);
+		static Ref<VertexBuffer> Create(void* vertices, uint32_t size);
 
 	private:
 		uint32_t m_RendererID;
@@ -150,5 +150,4 @@ namespace dyxide
 		uint32_t m_RendererID;
 		uint32_t m_Count;
 	};
-
 }
