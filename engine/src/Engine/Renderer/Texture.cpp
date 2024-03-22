@@ -8,7 +8,9 @@
 
 namespace dyxide
 {
-	namespace Utils
+	std::unordered_map<std::string, Ref<Texture2D>> s_Cache;
+
+	namespace utils
 	{
 		static GLenum ImageFormatToGLDataFormat(ImageFormat format)
 		{
@@ -38,8 +40,8 @@ namespace dyxide
 	Texture2D::Texture2D(const TextureSpecification& specification)
 		: m_Specification(specification), m_Width(m_Specification.Width), m_Height(m_Specification.Height)
 	{
-		m_InternalFormat = Utils::ImageFormatToGLInternalFormat(m_Specification.Format);
-		m_DataFormat = Utils::ImageFormatToGLDataFormat(m_Specification.Format);
+		m_InternalFormat = utils::ImageFormatToGLInternalFormat(m_Specification.Format);
+		m_DataFormat = utils::ImageFormatToGLDataFormat(m_Specification.Format);
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
@@ -127,6 +129,13 @@ namespace dyxide
 
 	Ref<Texture2D> Texture2D::Create(const std::string& path)
 	{
-		return CreateRef<Texture2D>(path);
+		if (s_Cache.find(path) != s_Cache.end())
+		{
+			return s_Cache[path];
+		}
+
+		auto texture = CreateRef<Texture2D>(path);
+		s_Cache[path] = texture;
+		return texture;
 	}
 }

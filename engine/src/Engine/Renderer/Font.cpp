@@ -13,6 +13,8 @@
 
 namespace dyxide
 {
+	std::unordered_map<std::string, Ref<Font>> s_Cache;
+
 	template<typename T, typename S, int N, msdf_atlas::GeneratorFunction<S, N> GenFunc>
 	static Ref<Texture2D> CreateAndCacheAtlas(const std::string& fontName, float fontSize, const std::vector<msdf_atlas::GlyphGeometry>& glyphs,
 		const msdf_atlas::FontGeometry& fontGeometry, uint32_t width, uint32_t height)
@@ -142,7 +144,14 @@ namespace dyxide
 
 	Ref<Font> Font::Create(const std::string& path)
 	{
-		return CreateRef<Font>(path);
+		if (s_Cache.find(path) != s_Cache.end())
+		{
+			return s_Cache[path];
+		}
+
+		auto font = CreateRef<Font>(path);
+		s_Cache[path] = font;
+		return font;
 	}
 
 	Ref<Font> Font::GetDefault()

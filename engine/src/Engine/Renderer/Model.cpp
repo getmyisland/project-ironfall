@@ -7,6 +7,8 @@
 
 namespace dyxide
 {
+	std::unordered_map<std::string, Ref<Model>> s_Cache;
+
 	Model::Model(std::vector<Mesh> meshes) : m_Meshes(meshes)
 	{
 
@@ -120,6 +122,11 @@ namespace dyxide
 
 	Ref<Model> Model::Create(const std::string& path)
 	{
+		if (s_Cache.find(path) != s_Cache.end())
+		{
+			return s_Cache[path];
+		}
+
 		Assimp::Importer importer;
 		// NOTE: Using aiProcess_FlipUVs causes the texture to be applied incorrectly
 		const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate);// | aiProcess_FlipUVs);
@@ -133,6 +140,8 @@ namespace dyxide
 
 		std::vector<Mesh> meshes = ProcessNode(scene->mRootNode, scene, path.substr(0, path.find_last_of('/')));
 
-		return CreateRef<Model>(meshes);
+		auto model = CreateRef<Model>(meshes);
+		s_Cache[path] = model;
+		return model;
 	}
 }
