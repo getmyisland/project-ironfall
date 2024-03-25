@@ -8,7 +8,7 @@
 
 namespace dyxide
 {
-	std::unordered_map<std::string, Ref<Texture2D>> s_Cache;
+	std::unordered_map<std::string, Ref<Texture2D>> s_TextureCache;
 
 	namespace utils
 	{
@@ -129,13 +129,13 @@ namespace dyxide
 
 	Ref<Texture2D> Texture2D::Create(const std::string& path)
 	{
-		if (s_Cache.find(path) != s_Cache.end())
+		if (s_TextureCache.find(path) != s_TextureCache.end())
 		{
-			return s_Cache[path];
+			return s_TextureCache[path];
 		}
 
 		auto texture = CreateRef<Texture2D>(path);
-		s_Cache[path] = texture;
+		s_TextureCache[path] = texture;
 		return texture;
 	}
 }

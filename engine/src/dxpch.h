@@ -1,8 +1,7 @@
 #pragma once
 
-#include "Engine/Core/PlatformDetection.h"
-
-#ifdef DYXIDE_PLATFORM_WINDOWS
+#if defined(_WIN32) || defined(_WIN64)
+	/* Windows x64/x86 */
 	#ifndef NOMINMAX
 		// See github.com/skypjack/entt/wiki/Frequently-Asked-Questions#warning-c4003-the-min-the-max-and-the-macro
 		#define NOMINMAX
@@ -25,7 +24,3 @@
 
 #include "Engine/Core/Common.h"
 #include "Engine/Core/Log.h"
-
-#ifdef DYXIDE_PLATFORM_WINDOWS
-	#include <Windows.h>
-#endif

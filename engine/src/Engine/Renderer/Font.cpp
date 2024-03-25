@@ -13,7 +13,7 @@
 
 namespace dyxide
 {
-	std::unordered_map<std::string, Ref<Font>> s_Cache;
+	std::unordered_map<std::string, Ref<Font>> s_FontCache;
 
 	template<typename T, typename S, int N, msdf_atlas::GeneratorFunction<S, N> GenFunc>
 	static Ref<Texture2D> CreateAndCacheAtlas(const std::string& fontName, float fontSize, const std::vector<msdf_atlas::GlyphGeometry>& glyphs,
@@ -144,13 +144,13 @@ namespace dyxide
 
 	Ref<Font> Font::Create(const std::string& path)
 	{
-		if (s_Cache.find(path) != s_Cache.end())
+		if (s_FontCache.find(path) != s_FontCache.end())
 		{
-			return s_Cache[path];
+			return s_FontCache[path];
 		}
 
 		auto font = CreateRef<Font>(path);
-		s_Cache[path] = font;
+		s_FontCache[path] = font;
 		return font;
 	}
 

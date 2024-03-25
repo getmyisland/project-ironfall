@@ -7,7 +7,7 @@
 
 namespace dyxide
 {
-	std::unordered_map<std::string, Ref<Model>> s_Cache;
+	std::unordered_map<std::string, Ref<Model>> s_ModelCache;
 
 	Model::Model(std::vector<Mesh> meshes) : m_Meshes(meshes)
 	{
@@ -122,9 +122,9 @@ namespace dyxide
 
 	Ref<Model> Model::Create(const std::string& path)
 	{
-		if (s_Cache.find(path) != s_Cache.end())
+		if (s_ModelCache.find(path) != s_ModelCache.end())
 		{
-			return s_Cache[path];
+			return s_ModelCache[path];
 		}
 
 		Assimp::Importer importer;
@@ -141,7 +141,7 @@ namespace dyxide
 		std::vector<Mesh> meshes = ProcessNode(scene->mRootNode, scene, path.substr(0, path.find_last_of('/')));
 
 		auto model = CreateRef<Model>(meshes);
-		s_Cache[path] = model;
+		s_ModelCache[path] = model;
 		return model;
 	}
 }
