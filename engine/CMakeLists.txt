@@ -23,6 +23,7 @@ target_include_directories(engine PUBLIC
 	${CMAKE_SOURCE_DIR}/external/msdf-atlas-gen/msdfgen
 	${CMAKE_SOURCE_DIR}/external/msdf-atlas-gen/msdfgen/include
 	${CMAKE_SOURCE_DIR}/external/msdf-atlas-gen/msdfgen/freetype/include
+	${CMAKE_SOURCE_DIR}/external/reactphysics3d/include
     ${CMAKE_SOURCE_DIR}/external/glm
     ${CMAKE_SOURCE_DIR}/external/stb_image
 )
@@ -35,4 +36,5 @@ target_link_libraries(engine PUBLIC
 	msdfgen
 	freetype
 	assimp
+	reactphysics3d
 )
