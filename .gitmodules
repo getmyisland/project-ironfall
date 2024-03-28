@@ -10,3 +10,6 @@
 [submodule "external/assimp"]
 	path = external/assimp
 	url = https://github.com/assimp/assimp.git
+[submodule "external/reactphysics3d"]
+	path = external/reactphysics3d
+	url = https://github.com/DanielChappuis/reactphysics3d.git
