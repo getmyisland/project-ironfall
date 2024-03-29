@@ -4,14 +4,14 @@
 #include <Engine/Core/Timestep.h>
 #include <Engine/Core/UUID.h>
 
+#include <reactphysics3d/reactphysics3d.h>
+
 #include <entt.hpp>
 
 #include <cstdint>
 #include <string>
 #include <string_view>
 #include <unordered_map>
-
-class b2World;
 
 namespace dyxide
 {
@@ -45,7 +45,7 @@ namespace dyxide
 		bool IsPaused() const { return m_IsPaused; }
 		void SetPaused(bool paused) { m_IsPaused = paused; }
 
-		void Step(int frames = 1);
+		reactphysics3d::PhysicsCommon* GetPhysicsCommon() { return &m_PhysicsCommon; }
 
 		template<typename... Components>
 		auto GetAllEntitiesWith()
@@ -61,11 +61,18 @@ namespace dyxide
 		template<typename T>
 		void OnComponentAdded(Entity entity, T& component);
 
+		template<typename T>
+		void OnComponentRemoved(Entity entity, T& component);
+
 	private:
 		entt::registry m_Registry;
+		reactphysics3d::PhysicsCommon m_PhysicsCommon;
+		reactphysics3d::PhysicsWorld* m_PhysicsWorld;
 		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 		bool m_IsPaused = false;
-		int m_StepFrames = 0;
+
+		const float m_PhysicsTimeStep = 1.0f / 60.0f;
+		double m_PhysicsAccumulator = 0;
 
 		std::unordered_map<UUID, entt::entity> m_EntityMap;
 

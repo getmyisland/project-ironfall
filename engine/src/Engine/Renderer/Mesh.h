@@ -32,6 +32,8 @@ namespace dyxide
 
 		const Ref<Texture2D>& GetDiffuseTexture() { return m_DiffuseTexture; }
 
+		const std::vector<Vertex>& GetVertices() { return m_Vertices; }
+
 	private:
 		Ref<VertexArray> m_VertexArray;
 		Ref<VertexBuffer> m_VertexBuffer;

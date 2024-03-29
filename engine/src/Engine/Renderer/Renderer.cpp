@@ -23,6 +23,7 @@ namespace dyxide
 {
 	struct RendererData
 	{
+		Ref<Texture2D> WhiteTexture;
 		Ref<Shader> MeshShader;
 		Renderer::Statistics Stats;
 	};
@@ -31,6 +32,10 @@ namespace dyxide
 
 	void Renderer::Init()
 	{
+		s_Data.WhiteTexture = Texture2D::Create(TextureSpecification());
+		uint32_t whiteTextureData = 0xffffffff;
+		s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
+
 		s_Data.MeshShader = ResourceLoader::LoadShader("shaders/Renderer_Mesh.vertex", "shaders/Renderer_Mesh.fragment");
 	}
 
@@ -70,7 +75,14 @@ namespace dyxide
 		for (Mesh& mesh : mrc.ModelAsset->GetMeshes())
 		{
 			s_Data.MeshShader->SetInt("u_TextureDiffuse", 0);
-			mesh.GetDiffuseTexture()->Bind(0);
+			if (mesh.GetDiffuseTexture())
+			{
+				mesh.GetDiffuseTexture()->Bind(0);
+			}
+			else
+			{
+				s_Data.WhiteTexture->Bind(0);
+			}
 
 			RenderCommand::DrawIndexed(mesh.GetVertexArray());
 			mesh.GetVertexArray()->Unbind();

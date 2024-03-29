@@ -7,13 +7,23 @@
 #include <Engine/Renderer/RenderCommand.h>
 #include <Engine/Renderer/RendererUI.h>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
 #include <glm/glm.hpp>
 
 #include <tuple>
 
 namespace dyxide
 {
-	Scene::Scene() { }
+	Scene::Scene()
+	{
+		reactphysics3d::PhysicsWorld::WorldSettings settings;
+		settings.defaultVelocitySolverNbIterations = 20;
+		settings.isSleepingEnabled = false;
+		settings.gravity = reactphysics3d::Vector3(0, -9.81, 0);
+		m_PhysicsWorld = m_PhysicsCommon.createPhysicsWorld(settings);
+	}
+
 	Scene::~Scene() { }
 
 	template<typename... Component>
@@ -83,9 +93,100 @@ namespace dyxide
 		// Update game state and variables
 		OnLogicUpdate(ts);
 
-		if (!m_IsPaused || m_StepFrames-- > 0)
+		if (!m_IsPaused)
 		{
-			// Update Physics
+			m_PhysicsAccumulator += ts;
+
+			while (m_PhysicsAccumulator >= m_PhysicsTimeStep)
+			{
+				// Update the rigid body transform with the transform component values
+				// Sync the rigid body's properties with the rigid body's component properties
+				{
+					auto view = m_Registry.view<TransformComponent, RigidBodyComponent>();
+					for (auto entity : view)
+					{
+						auto [transform, rbc] = view.get<TransformComponent, RigidBodyComponent>(entity);
+
+						auto* rb = static_cast<reactphysics3d::RigidBody*>(rbc.RigidBody);
+						if (!rb)
+						{
+							DYXIDE_WARN("Unable to retrieve RigidBody from Component");
+							continue;
+						}
+
+						rb->setType(static_cast<reactphysics3d::BodyType>(rbc.BodyType));
+						rb->enableGravity(rbc.UseGravity);
+						rb->setIsAllowedToSleep(rbc.CanSleep);
+						rb->setMass(rbc.Mass);
+						rb->setLinearLockAxisFactor({ rbc.LinearLockAxisConstraints.x, rbc.LinearLockAxisConstraints.y, rbc.LinearLockAxisConstraints.z });
+						rb->setAngularLockAxisFactor({ rbc.AngularLockAxisConstraints.x, rbc.AngularLockAxisConstraints.y, rbc.AngularLockAxisConstraints.z });
+
+						rb->applyWorldForceAtCenterOfMass({ rbc.Force.x, rbc.Force.y, rbc.Force.z });
+
+						if (m_Registry.has<ColliderComponent>(entity))
+						{
+							auto& cc = m_Registry.get<ColliderComponent>(entity);
+							if (cc.Shape && cc.Shape->GetCollisionShape())
+							{
+								if (cc.Shape->GetScale() != cc.Scale)
+								{
+									cc.Shape->SetScale(cc.Scale);
+								}
+
+								if (!rbc.Col || !rbc.Col->GetCollider() || !rbc.Col->GetCollider()->getCollisionShape() || rbc.Col->GetCollider()->getCollisionShape() != cc.Shape->GetCollisionShape())
+								{
+									if (rbc.Col && rbc.Col->GetCollider())
+									{
+										rb->removeCollider(rbc.Col->GetCollider());
+									}
+
+									auto* collider = rb->addCollider(cc.Shape->GetCollisionShape(), reactphysics3d::Transform::identity());
+									rbc.Col = CreateRef<Collider>(collider);
+								}
+							}
+
+							if (rbc.Col && rbc.Col->GetCollider())
+							{
+								reactphysics3d::Transform trans;
+								trans.setPosition({ cc.Position.x, cc.Position.y , cc.Position.z });
+								rbc.Col->GetCollider()->setLocalToBodyTransform(trans);
+							}
+						}
+
+						reactphysics3d::Transform trans;
+						trans.setPosition({ transform.Translation.x, transform.Translation.y , transform.Translation.z });
+						auto quat = reactphysics3d::Quaternion::fromEulerAngles({ transform.Rotation.x, transform.Rotation.y , transform.Rotation.z });
+						trans.setOrientation(quat);
+						rb->setTransform(trans);
+					}
+				}
+
+				m_PhysicsWorld->update(m_PhysicsTimeStep);
+
+				// Update the transform component with the transform of the rigid body
+				{
+					auto view = m_Registry.view<TransformComponent, RigidBodyComponent>();
+					for (auto entity : view)
+					{
+						auto [transform, rbc] = view.get<TransformComponent, RigidBodyComponent>(entity);
+
+						auto* rb = static_cast<reactphysics3d::RigidBody*>(rbc.RigidBody);
+						if (!rb)
+						{
+							DYXIDE_WARN("Unable to retrieve RigidBody from Component");
+							continue;
+						}
+
+						rbc.Force = glm::vec3();
+
+						const reactphysics3d::Transform& trans = rb->getTransform();
+						transform.Translation = { trans.getPosition().x, trans.getPosition().y, trans.getPosition().z };
+						transform.Rotation = { trans.getOrientation().getVectorV().x, trans.getOrientation().getVectorV().y, trans.getOrientation().getVectorV().z };
+					}
+				}
+
+				m_PhysicsAccumulator -= m_PhysicsTimeStep;
+			}
 		}
 
 		// Try finding the main camera
@@ -189,11 +290,6 @@ namespace dyxide
 		return {};
 	}
 
-	void Scene::Step(int frames)
-	{
-		m_StepFrames = frames;
-	}
-
 	Entity Scene::DuplicateEntity(Entity entity)
 	{
 		// Copy name because we're going to modify component data structure
@@ -226,41 +322,34 @@ namespace dyxide
 	template<typename T>
 	void Scene::OnComponentAdded(Entity entity, T& component)
 	{
-		static_assert(sizeof(T) == 0);
+		//static_assert(sizeof(T) == 0);
 	}
 
 	template<>
-	void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component)
+	void Scene::OnComponentAdded<RigidBodyComponent>(Entity entity, RigidBodyComponent& component)
 	{
+		// Populating values for the transform at this point is useless as it will be done nonetheless when updating physics.
+		reactphysics3d::Transform transform;
+		reactphysics3d::RigidBody* rb = m_PhysicsWorld->createRigidBody(transform);
+		component.RigidBody = rb;
+	}
+
+	template<typename T>
+	void Scene::OnComponentRemoved(Entity entity, T& component)
+	{
+		//static_assert(sizeof(T) == 0);
 	}
 
 	template<>
-	void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component)
+	void Scene::OnComponentRemoved<RigidBodyComponent>(Entity entity, RigidBodyComponent& component)
 	{
-	}
+		auto* rb = static_cast<reactphysics3d::RigidBody*>(component.RigidBody);
+		if (!rb)
+		{
+			DYXIDE_WARN("Unable to retrieve RigidBody from Component");
+			return;
+		}
 
-	template<>
-	void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component)
-	{
-	}
-
-	template<>
-	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
-	{
-	}
-
-	template<>
-	void Scene::OnComponentAdded<ModelRendererComponent>(Entity entity, ModelRendererComponent& component)
-	{
-	}
-
-	template<>
-	void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component)
-	{
-	}
-
-	template<>
-	void Scene::OnComponentAdded<TextComponent>(Entity entity, TextComponent& component)
-	{
+		m_PhysicsWorld->destroyRigidBody(rb);
 	}
 }

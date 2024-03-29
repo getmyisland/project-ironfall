@@ -5,6 +5,7 @@
 #include <Engine/Renderer/Model.h>
 #include <Engine/Renderer/Texture.h>
 #include <Engine/Renderer/Font.h>
+#include <Engine/Physics/Collider.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -57,7 +58,9 @@ namespace dyxide
 
 		glm::mat4 GetTransform() const
 		{
-			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
+			glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), Rotation.x, glm::vec3(1.0f, 0.0f, 0.0f))
+				* glm::rotate(glm::mat4(1.0f), Rotation.y, glm::vec3(0.0f, 1.0f, 0.0f))
+				* glm::rotate(glm::mat4(1.0f), Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
 
 			return glm::translate(glm::mat4(1.0f), Translation)
 				* rotation
@@ -109,11 +112,42 @@ namespace dyxide
 			: TextString(textString) {}
 	};
 
+	struct ColliderComponent
+	{
+		glm::vec3 Position{ 0.0f };
+		glm::vec3 Scale{ 1.0f };
+
+		Ref<CollisionShape> Shape;
+	};
+
+	struct RigidBodyComponent
+	{
+		enum class RigidBodyType { Static = 0, Kinematic, Dynamic };
+		RigidBodyType BodyType = RigidBodyType::Static;
+
+		Ref<Collider> Col;
+
+		bool UseGravity{ true };
+		bool CanSleep{ true };
+
+		glm::vec3 Force{ 0.0f };
+
+		// Mass in kg
+		float Mass{ 1.0f };
+
+		// 1 = motion is not restricted on this axis
+		// 0 = motion is restricted on this axis
+		glm::vec3 LinearLockAxisConstraints{ 1, 1, 1 };
+		glm::vec3 AngularLockAxisConstraints{ 1, 1, 1 };
+
+		void* RigidBody;
+	};
+
 	template<typename... Component>
 	struct ComponentGroup
 	{
 	};
 
 	using AllComponents =
-		ComponentGroup<TransformComponent, CameraComponent, SpriteRendererComponent, ModelRendererComponent, TextComponent>;
+		ComponentGroup<TransformComponent, CameraComponent, SpriteRendererComponent, ModelRendererComponent, TextComponent, ColliderComponent, RigidBodyComponent>;
 }

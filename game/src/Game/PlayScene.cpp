@@ -18,6 +18,7 @@ namespace dyxide
 	PlayerController g_PlayerController;
 
 	Entity g_Humanoid;
+	Entity g_Ground;
 	Entity g_Debug;
 
 	void PlayScene::OnLoad()
@@ -28,9 +29,20 @@ namespace dyxide
 		g_Player.AddComponent<CameraComponent>().Primary = true;
 
 		g_Humanoid = CreateEntity("Humanoid");
-		g_Humanoid.AddComponent<ModelRendererComponent>().ModelAsset = ResourceLoader::LoadModel("/models/Humanoid.fbx");
+		auto model = ResourceLoader::LoadModel("/models/Humanoid.fbx");
+		g_Humanoid.AddComponent<ModelRendererComponent>().ModelAsset = model;
 		auto& transform = g_Humanoid.GetComponent<TransformComponent>();
 		transform.Translation = { 5.0f, 0.0f, 0.0f };
+		g_Humanoid.AddComponent<RigidBodyComponent>().BodyType = RigidBodyComponent::RigidBodyType::Dynamic;
+		g_Humanoid.AddComponent<ColliderComponent>().Shape = MeshCollisionShape::Create(model);
+
+		g_Ground = CreateEntity("Ground");
+		auto ground = ResourceLoader::LoadModel("/models/Ground.obj");
+		g_Ground.AddComponent<ModelRendererComponent>().ModelAsset = ground;
+		auto& gt = g_Ground.GetComponent<TransformComponent>();
+		gt.Translation = { 0.0f, -5.0f, 0.0f };
+		g_Ground.AddComponent<RigidBodyComponent>();
+		g_Ground.AddComponent<ColliderComponent>().Shape = MeshCollisionShape::Create(ground);
 
 		g_Debug = CreateEntity("Debug");
 		g_Debug.AddComponent<TextComponent>("");
