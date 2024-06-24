@@ -33,6 +33,7 @@ namespace dyxide
 		g_Humanoid.AddComponent<ModelRendererComponent>().ModelAsset = model;
 		auto& transform = g_Humanoid.GetComponent<TransformComponent>();
 		transform.Translation = { 5.0f, 0.0f, 0.0f };
+		transform.Rotation = { -90.0f, -90.0f, 0.0f };
 		g_Humanoid.AddComponent<RigidBodyComponent>().BodyType = RigidBodyComponent::RigidBodyType::Dynamic;
 		g_Humanoid.AddComponent<ColliderComponent>().Shape = MeshCollisionShape::Create(model);
 
