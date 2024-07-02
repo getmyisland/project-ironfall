@@ -159,14 +159,15 @@ namespace dyxide
 							if (rbc.Col && rbc.Col->GetCollider())
 							{
 								reactphysics3d::Transform trans;
-								trans.setPosition({ cc.Position.x, cc.Position.y , cc.Position.z });
+								trans.setPosition({ cc.Position.x, cc.Position.y , cc.Position.z }); // may not be needed if only mesh transforms are used
+								// an alternate rotation of the collider could also be possible here
 								rbc.Col->GetCollider()->setLocalToBodyTransform(trans);
 							}
 						}
 
 						reactphysics3d::Transform trans;
 						trans.setPosition({ transform.Translation.x, transform.Translation.y , transform.Translation.z });
-						auto quat = reactphysics3d::Quaternion::fromEulerAngles({ transform.Rotation.x, transform.Rotation.y , transform.Rotation.z });
+						auto quat = reactphysics3d::Quaternion({ transform.Rotation.x, transform.Rotation.y , transform.Rotation.z, transform.Rotation.w });
 						trans.setOrientation(quat);
 						rb->setTransform(trans);
 					}
@@ -192,7 +193,7 @@ namespace dyxide
 
 						const reactphysics3d::Transform& trans = rb->getTransform();
 						transform.Translation = { trans.getPosition().x, trans.getPosition().y, trans.getPosition().z };
-						transform.Rotation = { trans.getOrientation().getVectorV().x, trans.getOrientation().getVectorV().y, trans.getOrientation().getVectorV().z };
+						//transform.Rotation = { trans.getOrientation().getVectorV().x, trans.getOrientation().getVectorV().y, trans.getOrientation().getVectorV().z };
 					}
 				}
 

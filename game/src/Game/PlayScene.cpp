@@ -14,10 +14,10 @@
 
 namespace dyxide
 {
-	Entity g_Player;
+	Entity g_PlayerCamera;
 	PlayerController g_PlayerController;
 
-	Entity g_Humanoid;
+	Entity g_PlayerModel;
 	Entity g_Ground;
 	Entity g_Debug;
 
@@ -25,17 +25,19 @@ namespace dyxide
 	{
 		Input::LockCursor();
 
-		g_Player = CreateEntity("Camera");
-		g_Player.AddComponent<CameraComponent>().Primary = true;
+		g_PlayerCamera = CreateEntity("Player_Camera");
+		g_PlayerCamera.AddComponent<CameraComponent>().Primary = true;
 
-		g_Humanoid = CreateEntity("Humanoid");
-		auto model = ResourceLoader::LoadModel("/models/Humanoid.fbx");
-		g_Humanoid.AddComponent<ModelRendererComponent>().ModelAsset = model;
-		auto& transform = g_Humanoid.GetComponent<TransformComponent>();
-		transform.Translation = { 5.0f, 0.0f, 0.0f };
-		transform.Rotation = { -90.0f, -90.0f, 0.0f };
-		g_Humanoid.AddComponent<RigidBodyComponent>().BodyType = RigidBodyComponent::RigidBodyType::Dynamic;
-		g_Humanoid.AddComponent<ColliderComponent>().Shape = MeshCollisionShape::Create(model);
+		g_PlayerModel = CreateEntity("Player_Model");
+		auto model = ResourceLoader::LoadModel("/models/Humanoid.obj");
+		g_PlayerModel.AddComponent<ModelRendererComponent>().ModelAsset = model;
+		auto& transform = g_PlayerModel.GetComponent<TransformComponent>();
+		transform.Rotation = glm::angleAxis(180.0f, glm::vec3(0, 1, 0));
+		auto& rigidbody = g_PlayerModel.AddComponent<RigidBodyComponent>();
+		rigidbody.BodyType = RigidBodyComponent::RigidBodyType::Dynamic;
+		rigidbody.AngularLockAxisConstraints = glm::vec3(0, 1, 0); // Only allow rotation on Y axis
+		//g_PlayerModel.AddComponent<ColliderComponent>().Shape = BoxCollisionShape::Create({ 5, 5, 5 }); // TODO size isn't applied correctly for unknown reasons
+		g_PlayerModel.AddComponent<ColliderComponent>().Shape = MeshCollisionShape::Create(model);
 
 		g_Ground = CreateEntity("Ground");
 		auto ground = ResourceLoader::LoadModel("/models/Ground.obj");
@@ -69,12 +71,15 @@ namespace dyxide
 			return;
 		}
 
-		auto& transform = g_Player.GetComponent<TransformComponent>();
-		g_PlayerController.CalculateMovement(ts, transform);
+		auto& camera = g_PlayerCamera.GetComponent<TransformComponent>();
+		auto& model = g_PlayerModel.GetComponent<TransformComponent>();
+		g_PlayerController.CalculateMovement(ts, camera, model);
 
 		std::stringstream oss;
-		oss << "position: " << glm::to_string(transform.Translation) << "\n";
-		oss << "rotation: " << glm::to_string(transform.Rotation);
+		oss << "position: " << glm::to_string(camera.Translation) << "\n";
+		oss << "rotation: " << glm::to_string(camera.Rotation) << "\n";
+		oss << "model position: " << glm::to_string(model.Translation) << "\n";
+		oss << "model rotation: " << glm::to_string(model.Rotation);
 
 		g_Debug.GetComponent<TextComponent>().TextString = oss.str();
 	}

@@ -45,7 +45,7 @@ namespace dyxide
 	struct TransformComponent
 	{
 		glm::vec3 Translation = { 0.0f, 0.0f, 0.0f };
-		glm::vec3 Rotation = { 0.0f, 0.0f, 0.0f }; // Euler Angles
+		glm::quat Rotation = glm::quat(1, 0, 0, 0);
 		glm::vec3 Scale = { 1.0f, 1.0f, 1.0f };
 		bool IsActive{ true };
 
@@ -58,11 +58,46 @@ namespace dyxide
 
 		glm::mat4 GetTransform() const
 		{
-			glm::mat4 rotation = glm::toMat4(glm::quat(glm::radians(Rotation)));
+			glm::mat4 translation = glm::translate(glm::mat4(1.0), Translation);
+			glm::mat4 rotation = glm::mat4_cast(Rotation);
+			glm::mat4 scale = glm::scale(glm::mat4(1.0), Scale);
 
-			return glm::translate(glm::mat4(1.0f), Translation)
-				* rotation
-				* glm::scale(glm::mat4(1.0f), Scale);
+			return translation * rotation * scale;
+		}
+
+		/*glm::mat4 GetView() const
+		{
+			return glm::inverse(GetTransform());
+		}*/
+
+		glm::vec3 GetForward() const {
+			return Rotation * glm::vec3(0, 0, -1);
+		}
+
+		glm::vec3 GetRight() const {
+			return Rotation * glm::vec3(1, 0, 0);
+		}
+
+		glm::vec3 GetUp() const {
+			return Rotation * glm::vec3(0, 1, 0);
+		}
+
+		void SetForward(const glm::vec3& newForward) {
+			glm::vec3 currentForward = GetForward();
+			glm::quat rotationChange = glm::rotation(currentForward, newForward);
+			Rotation = rotationChange * Rotation;
+		}
+
+		void SetRight(const glm::vec3& newRight) {
+			glm::vec3 currentRight = GetRight();
+			glm::quat rotationChange = glm::rotation(currentRight, newRight);
+			Rotation = rotationChange * Rotation;
+		}
+
+		void SetUp(const glm::vec3& newUp) {
+			glm::vec3 currentUp = GetUp();
+			glm::quat rotationChange = glm::rotation(currentUp, newUp);
+			Rotation = rotationChange * Rotation;
 		}
 	};
 
