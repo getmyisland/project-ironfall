@@ -62,6 +62,7 @@ namespace dyxide
 
 		const ApplicationSpecification& GetSpecification() const { return m_Specification; }
 		const Ref<Scene> GetScene() const { return m_Scene; }
+		const bool IsDebug() const { return m_Debug; }
 
 		void SubmitToMainThread(const std::function<void()>& function);
 
@@ -76,6 +77,7 @@ namespace dyxide
 		ApplicationSpecification m_Specification;
 		Scope<Window> m_Window;
 		Ref<Scene> m_Scene;
+		bool m_Debug = false;
 		bool m_Running = true;
 		bool m_Minimized = false;
 		float m_LastFrameTime = 0.0f;

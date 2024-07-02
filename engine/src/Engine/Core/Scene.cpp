@@ -1,6 +1,7 @@
 #include <dxpch.h>
 #include <Engine/Core/Scene.h>
 
+#include <Engine/Core/Application.h>
 #include <Engine/Core/Entity.h>
 #include <Engine/Core/Components.h>
 #include <Engine/Renderer/Renderer.h>
@@ -22,17 +23,21 @@ namespace dyxide
 		settings.isSleepingEnabled = false;
 		settings.gravity = reactphysics3d::Vector3(0, -9.81, 0);
 		m_PhysicsWorld = m_PhysicsCommon.createPhysicsWorld(settings);
-		m_PhysicsWorld->setIsDebugRenderingEnabled(true);
 
-		// Get a reference to the debug renderer
-		m_DebugRenderer = &m_PhysicsWorld->getDebugRenderer();
+		if (Application::Get().IsDebug())
+		{
+			m_PhysicsWorld->setIsDebugRenderingEnabled(true);
 
-		// Select the contact points and contact normals to be displayed
-		m_DebugRenderer->setIsDebugItemDisplayed(reactphysics3d::DebugRenderer::DebugItem::CONTACT_POINT, true);
-		//m_DebugRenderer->setIsDebugItemDisplayed(reactphysics3d::DebugRenderer::DebugItem::CONTACT_NORMAL, true);
-		m_DebugRenderer->setIsDebugItemDisplayed(reactphysics3d::DebugRenderer::DebugItem::COLLIDER_AABB, true);
-		m_DebugRenderer->setIsDebugItemDisplayed(reactphysics3d::DebugRenderer::DebugItem::COLLISION_SHAPE, true);
-		//m_DebugRenderer->setIsDebugItemDisplayed(reactphysics3d::DebugRenderer::DebugItem::COLLISION_SHAPE_NORMAL, true);
+			// Get a reference to the debug renderer
+			m_DebugRenderer = &m_PhysicsWorld->getDebugRenderer();
+
+			// Select the contact points and contact normals to be displayed
+			m_DebugRenderer->setIsDebugItemDisplayed(reactphysics3d::DebugRenderer::DebugItem::CONTACT_POINT, true);
+			//m_DebugRenderer->setIsDebugItemDisplayed(reactphysics3d::DebugRenderer::DebugItem::CONTACT_NORMAL, true);
+			m_DebugRenderer->setIsDebugItemDisplayed(reactphysics3d::DebugRenderer::DebugItem::COLLIDER_AABB, true);
+			m_DebugRenderer->setIsDebugItemDisplayed(reactphysics3d::DebugRenderer::DebugItem::COLLISION_SHAPE, true);
+			//m_DebugRenderer->setIsDebugItemDisplayed(reactphysics3d::DebugRenderer::DebugItem::COLLISION_SHAPE_NORMAL, true);
+		}
 	}
 
 	Scene::~Scene() { }
@@ -247,6 +252,7 @@ namespace dyxide
 		}
 
 		// Draw debug physics shapes
+		if (Application::Get().IsDebug())
 		{
 			// Convert all lines into vertices
 			std::vector<PrimitiveVertex> lines;
@@ -376,7 +382,12 @@ namespace dyxide
 		// Populating values for the transform at this point is useless as it will be done nonetheless when updating physics.
 		reactphysics3d::Transform transform;
 		reactphysics3d::RigidBody* rb = m_PhysicsWorld->createRigidBody(transform);
-		rb->setIsDebugEnabled(true);
+
+		if (Application::Get().IsDebug())
+		{
+			rb->setIsDebugEnabled(true);
+		}
+
 		component.RigidBody = rb;
 	}
 

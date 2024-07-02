@@ -19,6 +19,16 @@ namespace dyxide
 		DYXIDE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
+		for (int i = 0; i < m_Specification.CommandLineArgs.Count; i++)
+		{
+			// Check if the game was started in debug mode
+			if (std::strcmp(m_Specification.CommandLineArgs[i], "-d") == 0 || std::strcmp(m_Specification.CommandLineArgs[i], "--debug") == 0)
+			{
+				m_Debug = true;
+				break;
+			}
+		}
+
 		m_Window = Window::Create(WindowProps(m_Specification.Name));
 		m_Window->SetEventCallback(DYXIDE_BIND_EVENT_FN(Application::OnEvent));
 
