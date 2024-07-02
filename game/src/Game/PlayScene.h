@@ -4,6 +4,8 @@
 #include <Engine/Core/Scene.h>
 #include <Engine/Core/Timestep.h>
 
+#include <Game/Player/Player.h>
+
 namespace dyxide
 {
 	class PlayScene : public Scene
@@ -16,5 +18,8 @@ namespace dyxide
 	protected:
 		virtual void OnLogicUpdate(Timestep ts) override;
 		virtual void OnViewportResize(uint32_t width, uint32_t height) override;
+
+	private:
+		Ref<Player> m_Player;
 	};
 }

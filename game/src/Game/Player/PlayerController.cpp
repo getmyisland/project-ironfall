@@ -1,4 +1,4 @@
-#include <Game/PlayerController.h>
+#include <Game/Player/PlayerController.h>
 
 #include <Engine/Core/Log.h>
 #include <Engine/Core/Input.h>
@@ -27,23 +27,20 @@ namespace dyxide
 
 		model.Translation += movement * velocity;
 
-        // Rotation
-        glm::vec2 mouseOffset = Input::GetMouseOffset();
-        float yaw = -glm::radians(mouseOffset.y * m_MouseSensitivity);
-        float pitch = glm::radians(mouseOffset.x * m_MouseSensitivity);
+		// Rotation
+		glm::vec2 mouseOffset = Input::GetMouseOffset();
+		float yaw = -glm::radians(mouseOffset.y * m_MouseSensitivity);
+		float pitch = glm::radians(mouseOffset.x * m_MouseSensitivity);
 
-        // Update camera yaw and pitch
-        m_CameraYaw += yaw;
-        m_CameraPitch += pitch;
+		// Update camera yaw and pitch
+		m_CameraYaw += yaw;
+		m_CameraPitch += pitch;
 
-        // Clamp pitch to avoid flipping
-        m_CameraPitch = glm::clamp(m_CameraPitch, -glm::half_pi<float>() * 0.9f, glm::half_pi<float>() * 0.9f);
+		// Clamp pitch to avoid flipping
+		m_CameraPitch = glm::clamp(m_CameraPitch, -glm::half_pi<float>() * 0.9f, glm::half_pi<float>() * 0.9f);
 
-        // Rotate the model only around the Y-axis (yaw)
-        model.Rotation = glm::quat(glm::vec3(0.0f, m_CameraYaw, 0.0f));
-
-        // Calculate camera rotation (pitch and yaw only)
-        //glm::quat cameraRotation = glm::quat(glm::vec3(m_CameraPitch, m_CameraYaw, 0.0f));
+		// Rotate the model only around the Y-axis (yaw)
+		model.Rotation = glm::quat(glm::vec3(0.0f, m_CameraYaw, 0.0f));
 
 		// Calculate the camera's position relative to the model
 		glm::vec3 upOffset = glm::vec3(0.0f, 2.0f, 0.0f);
