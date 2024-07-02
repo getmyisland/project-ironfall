@@ -22,6 +22,17 @@ namespace dyxide
 		settings.isSleepingEnabled = false;
 		settings.gravity = reactphysics3d::Vector3(0, -9.81, 0);
 		m_PhysicsWorld = m_PhysicsCommon.createPhysicsWorld(settings);
+		m_PhysicsWorld->setIsDebugRenderingEnabled(true);
+
+		// Get a reference to the debug renderer
+		m_DebugRenderer = &m_PhysicsWorld->getDebugRenderer();
+
+		// Select the contact points and contact normals to be displayed
+		m_DebugRenderer->setIsDebugItemDisplayed(reactphysics3d::DebugRenderer::DebugItem::CONTACT_POINT, true);
+		//m_DebugRenderer->setIsDebugItemDisplayed(reactphysics3d::DebugRenderer::DebugItem::CONTACT_NORMAL, true);
+		m_DebugRenderer->setIsDebugItemDisplayed(reactphysics3d::DebugRenderer::DebugItem::COLLIDER_AABB, true);
+		m_DebugRenderer->setIsDebugItemDisplayed(reactphysics3d::DebugRenderer::DebugItem::COLLISION_SHAPE, true);
+		//m_DebugRenderer->setIsDebugItemDisplayed(reactphysics3d::DebugRenderer::DebugItem::COLLISION_SHAPE_NORMAL, true);
 	}
 
 	Scene::~Scene() { }
@@ -32,13 +43,13 @@ namespace dyxide
 		([&]()
 			{
 				auto view = src.view<Component>();
-		for (auto srcEntity : view)
-		{
-			entt::entity dstEntity = enttMap.at(src.get<IDComponent>(srcEntity).ID);
+				for (auto srcEntity : view)
+				{
+					entt::entity dstEntity = enttMap.at(src.get<IDComponent>(srcEntity).ID);
 
-			auto& srcComponent = src.get<Component>(srcEntity);
-			dst.emplace_or_replace<Component>(dstEntity, srcComponent);
-		}
+					auto& srcComponent = src.get<Component>(srcEntity);
+					dst.emplace_or_replace<Component>(dstEntity, srcComponent);
+				}
 			}(), ...);
 	}
 
@@ -54,7 +65,7 @@ namespace dyxide
 		([&]()
 			{
 				if (src.HasComponent<Component>())
-				dst.AddOrReplaceComponent<Component>(src.GetComponent<Component>());
+					dst.AddOrReplaceComponent<Component>(src.GetComponent<Component>());
 			}(), ...);
 	}
 
@@ -234,6 +245,39 @@ namespace dyxide
 			DYXIDE_WARN("No Primary Camera found");
 		}
 
+		// Draw debug physics shapes
+		{
+			// Convert all lines into vertices
+			std::vector<PrimitiveVertex> lines;
+			for (int i = 0; i < m_DebugRenderer->getNbLines(); ++i) {
+				auto line = m_DebugRenderer->getLinesArray()[i];
+				lines.push_back({ glm::vec3(line.point1.x, line.point1.y, line.point1.z),
+									 glm::vec3((line.color1 >> 24) & 0xFF, (line.color1 >> 16) & 0xFF, (line.color1 >> 8) & 0xFF) });
+				lines.push_back({ glm::vec3(line.point2.x, line.point2.y, line.point2.z),
+									 glm::vec3((line.color2 >> 24) & 0xFF, (line.color2 >> 16) & 0xFF, (line.color2 >> 8) & 0xFF) });
+			}
+
+			// Create a line primitive from the vertices and draw it
+			Primitive pline = Primitive(PrimitiveType::LINE, lines);
+			Renderer::DrawPrimitive(pline);
+
+			// Convert all triangles into vertices
+			std::vector<PrimitiveVertex> triangles;
+			for (int i = 0; i < m_DebugRenderer->getNbTriangles(); ++i) {
+				auto triangle = m_DebugRenderer->getTrianglesArray()[i];
+				triangles.push_back({ glm::vec3(triangle.point1.x, triangle.point1.y, triangle.point1.z),
+									 glm::vec3((triangle.color1 >> 24) & 0xFF, (triangle.color1 >> 16) & 0xFF, (triangle.color1 >> 8) & 0xFF) });
+				triangles.push_back({ glm::vec3(triangle.point2.x, triangle.point2.y, triangle.point2.z),
+									 glm::vec3((triangle.color2 >> 24) & 0xFF, (triangle.color2 >> 16) & 0xFF, (triangle.color2 >> 8) & 0xFF) });
+				triangles.push_back({ glm::vec3(triangle.point3.x, triangle.point3.y, triangle.point3.z),
+									 glm::vec3((triangle.color3 >> 24) & 0xFF, (triangle.color3 >> 16) & 0xFF, (triangle.color3 >> 8) & 0xFF) });
+			}
+
+			// Create a triangle primitive from the vertices and draw it
+			Primitive ptriangle = Primitive(PrimitiveType::TRIANGLE, triangles);
+			Renderer::DrawPrimitive(ptriangle);
+		}
+
 		RendererUI::BeginScene();
 
 		// Draw sprites
@@ -331,6 +375,7 @@ namespace dyxide
 		// Populating values for the transform at this point is useless as it will be done nonetheless when updating physics.
 		reactphysics3d::Transform transform;
 		reactphysics3d::RigidBody* rb = m_PhysicsWorld->createRigidBody(transform);
+		rb->setIsDebugEnabled(true);
 		component.RigidBody = rb;
 	}
 

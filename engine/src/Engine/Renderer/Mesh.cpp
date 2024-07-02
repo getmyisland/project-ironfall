@@ -3,12 +3,12 @@
 
 namespace dyxide
 {
-	Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<uint32_t>& indices, Ref<Texture2D>& diffuseTexture) : m_Vertices(vertices), m_Indices(indices), m_DiffuseTexture(diffuseTexture)
+	Mesh::Mesh(std::vector<ModelVertex>& vertices, std::vector<uint32_t>& indices, Ref<Texture2D>& diffuseTexture) : m_Vertices(vertices), m_Indices(indices), m_DiffuseTexture(diffuseTexture)
 	{
 		m_VertexArray = CreateRef<VertexArray>();
 		m_VertexArray->Bind();
 
-		m_VertexBuffer = VertexBuffer::Create(vertices.data(), vertices.size() * sizeof(Vertex));
+		m_VertexBuffer = VertexBuffer::Create(vertices.data(), vertices.size() * sizeof(ModelVertex));
 		m_VertexBuffer->SetLayout({
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float3, "a_Normal" },

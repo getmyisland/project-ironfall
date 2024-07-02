@@ -7,10 +7,6 @@
 
 namespace dyxide
 {
-	/////////////////////////////////////////////////////////////////////////////
-	// MeshCollisionShape ///////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////
-
 	MeshCollisionShape::MeshCollisionShape(std::vector<glm::vec3> vertices)
 	{
 		rp3d::VertexArray vertexArray(vertices.data(), 3 * sizeof(float),
@@ -40,7 +36,7 @@ namespace dyxide
 		DYXIDE_ASSERT(m_ConvexMesh, "ConvexMesh Creation failed.");
 
 		// Create the ConvexMeshShape 
-		m_ConvexMeshShape = Application::Get().GetScene()->GetPhysicsCommon()->createConvexMeshShape(m_ConvexMesh, {1, 1, 1});
+		m_ConvexMeshShape = Application::Get().GetScene()->GetPhysicsCommon()->createConvexMeshShape(m_ConvexMesh, { 1, 1, 1 });
 	}
 
 	MeshCollisionShape::~MeshCollisionShape()
@@ -55,7 +51,7 @@ namespace dyxide
 
 	Ref<MeshCollisionShape> MeshCollisionShape::Create(std::vector<Mesh> meshes)
 	{
-		std::vector<Vertex> concatenatedVertices;
+		std::vector<ModelVertex> concatenatedVertices;
 
 		size_t totalVerticesCount = 0;
 		for (auto& mesh : meshes) {
@@ -70,13 +66,13 @@ namespace dyxide
 		return Create(concatenatedVertices);
 	}
 
-	Ref<MeshCollisionShape> MeshCollisionShape::Create(std::vector<Vertex> vertices)
+	Ref<MeshCollisionShape> MeshCollisionShape::Create(std::vector<ModelVertex> vertices)
 	{
 		std::vector<glm::vec3> positions;
 		positions.reserve(vertices.size());
 
 		std::transform(vertices.begin(), vertices.end(), std::back_inserter(positions),
-			[](const Vertex& vertex) { return vertex.Position; });
+			[](const ModelVertex& vertex) { return vertex.Position; });
 
 		return CreateRef<MeshCollisionShape>(positions);
 	}

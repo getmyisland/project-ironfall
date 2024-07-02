@@ -32,6 +32,16 @@ namespace dyxide
 		{
 			s_RendererAPI->DrawIndexed(vertexArray, indexCount);
 		}
+
+		static void DrawLine(const Ref<VertexArray>& vertexArray, size_t vertexCount)
+		{
+			s_RendererAPI->DrawLine(vertexArray, vertexCount);
+		}
+
+		static void DrawTriangle(const Ref<VertexArray>& vertexArray, size_t vertexCount)
+		{
+			s_RendererAPI->DrawTriangle(vertexArray, vertexCount);
+		}
 	private:
 		static Scope<RendererAPI> s_RendererAPI;
 	};

@@ -68,6 +68,7 @@ namespace dyxide
 		entt::registry m_Registry;
 		reactphysics3d::PhysicsCommon m_PhysicsCommon;
 		reactphysics3d::PhysicsWorld* m_PhysicsWorld;
+		reactphysics3d::DebugRenderer* m_DebugRenderer;
 		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 		bool m_IsPaused = false;
 

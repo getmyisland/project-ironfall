@@ -17,6 +17,8 @@ namespace dyxide
 		void Clear();
 
 		void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0);
+		void DrawLine(const Ref<VertexArray>& vertexArray, size_t vertexCount);
+		void DrawTriangle(const Ref<VertexArray>& vertexArray, size_t vertexCount);
 
 		static Scope<RendererAPI> Create();
 	};

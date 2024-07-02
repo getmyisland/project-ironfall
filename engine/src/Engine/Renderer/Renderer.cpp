@@ -25,6 +25,7 @@ namespace dyxide
 	{
 		Ref<Texture2D> WhiteTexture;
 		Ref<Shader> MeshShader;
+		Ref<Shader> PrimitiveShader;
 		Renderer::Statistics Stats;
 	};
 
@@ -37,6 +38,7 @@ namespace dyxide
 		s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
 		s_Data.MeshShader = ResourceLoader::LoadShader("shaders/Renderer_Mesh.vertex", "shaders/Renderer_Mesh.fragment");
+		s_Data.PrimitiveShader = ResourceLoader::LoadShader("shaders/Renderer_Primitive.vertex", "shaders/Renderer_Primitive.fragment");
 	}
 
 	void Renderer::Shutdown()
@@ -52,9 +54,14 @@ namespace dyxide
 	void Renderer::BeginScene(CameraComponent& camera, TransformComponent& cameraTransform)
 	{
 		auto& window = Application::Get().GetWindow();
+
 		s_Data.MeshShader->Bind();
 		s_Data.MeshShader->SetMat4("u_Projection", glm::perspective(glm::radians(camera.FieldOfView), static_cast<float>(window.GetWidth()) / static_cast<float>(window.GetHeight()), camera.PerspectiveNear, camera.PerspectiveFar));
-		s_Data.MeshShader->SetMat4("u_View", glm::lookAt(cameraTransform.Translation, cameraTransform.Translation + Math::Vector3Forward(cameraTransform.Rotation), Math::Vector3Up(cameraTransform.Rotation)));
+		s_Data.MeshShader->SetMat4("u_View", glm::lookAt(cameraTransform.Translation, cameraTransform.Translation + cameraTransform.GetForward(), cameraTransform.GetUp()));
+
+		s_Data.PrimitiveShader->Bind();
+		s_Data.PrimitiveShader->SetMat4("u_Projection", glm::perspective(glm::radians(camera.FieldOfView), static_cast<float>(window.GetWidth()) / static_cast<float>(window.GetHeight()), camera.PerspectiveNear, camera.PerspectiveFar));
+		s_Data.PrimitiveShader->SetMat4("u_View", glm::lookAt(cameraTransform.Translation, cameraTransform.Translation + cameraTransform.GetForward(), cameraTransform.GetUp()));
 	}
 
 	void Renderer::EndScene()
@@ -91,6 +98,27 @@ namespace dyxide
 
 		s_Data.MeshShader->Unbind();
 		s_Data.Stats.ModelCount++;
+	}
+
+	void Renderer::DrawPrimitive(Primitive& primitive)
+	{
+		s_Data.PrimitiveShader->Bind();
+		s_Data.PrimitiveShader->SetMat4("u_Transform", glm::mat4(1.0f));
+
+		switch (primitive.GetType())
+		{
+		case PrimitiveType::LINE:
+			RenderCommand::DrawLine(primitive.GetVertexArray(), primitive.GetVertices().size());
+			break;
+		case PrimitiveType::TRIANGLE:
+			RenderCommand::DrawTriangle(primitive.GetVertexArray(), primitive.GetVertices().size());
+			break;
+		}
+
+		s_Data.PrimitiveShader->Unbind();
+
+		s_Data.Stats.DrawCalls++;
+		s_Data.Stats.PrimitiveCount++;
 	}
 
 	void Renderer::ResetStats()

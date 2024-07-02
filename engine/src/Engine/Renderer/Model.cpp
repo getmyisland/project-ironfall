@@ -46,14 +46,14 @@ namespace dyxide
 
 	Mesh ProcessMesh(aiMesh* aiMesh, const aiScene* aiScene, std::string directory)
 	{
-		std::vector<Vertex> vertices;
+		std::vector<ModelVertex> vertices;
 		std::vector<uint32_t> indices;
 		Ref<Texture2D> diffuseTexture = nullptr;
 
 		// Process vertex positions, normals and texture coordinates
 		for (unsigned int i = 0; i < aiMesh->mNumVertices; i++)
 		{
-			Vertex vertex = {};
+			ModelVertex vertex = {};
 
 			glm::vec3 vec;
 			vec.x = aiMesh->mVertices[i].x;

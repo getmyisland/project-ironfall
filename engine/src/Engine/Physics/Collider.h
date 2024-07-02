@@ -56,7 +56,7 @@ namespace dyxide
 
 		static Ref<MeshCollisionShape> Create(Ref<Model> model);
 		static Ref<MeshCollisionShape> Create(std::vector<Mesh> meshes);
-		static Ref<MeshCollisionShape> Create(std::vector<Vertex> vertices);
+		static Ref<MeshCollisionShape> Create(std::vector<ModelVertex> vertices);
 
 	private:
 		reactphysics3d::ConvexMesh* m_ConvexMesh;
