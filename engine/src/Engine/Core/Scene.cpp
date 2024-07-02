@@ -38,6 +38,10 @@ namespace dyxide
 			m_DebugRenderer->setIsDebugItemDisplayed(reactphysics3d::DebugRenderer::DebugItem::COLLISION_SHAPE, true);
 			//m_DebugRenderer->setIsDebugItemDisplayed(reactphysics3d::DebugRenderer::DebugItem::COLLISION_SHAPE_NORMAL, true);
 		}
+		else
+		{
+			m_DebugRenderer = nullptr;
+		}
 	}
 
 	Scene::~Scene() { }
